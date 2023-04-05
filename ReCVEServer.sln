@@ -3,12 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33502.453
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReCVEServer", "ReCVEServer\ReCVEServer.csproj", "{52F4C001-14B1-45FA-9DB8-6E04576B62B4}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NistApi", "NistApi", "{0A3320BF-D1B6-4C2E-A9F2-03AE4DFA39E6}"
-	ProjectSection(SolutionItems) = preProject
-		ReCVEServer\NistApiClient.cs = ReCVEServer\NistApiClient.cs
-	EndProjectSection
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReCVEServer", "ReCVEServer\ReCVEServer.csproj", "{52F4C001-14B1-45FA-9DB8-6E04576B62B4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

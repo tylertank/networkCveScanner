@@ -16,11 +16,13 @@ namespace ReCVEServer.Controllers
         public async Task<ActionResult> Index()
         {
             int startIndex = 0;
-            int resultsPerPage = 20;
+            string application = "windows_10";
+            string version = "22h2";
+            string vendor = "microsoft";
 
             try
             {
-                var cveData = await _nistApiClient.GetCveDataAsync(startIndex, resultsPerPage);
+                var cveData = await _nistApiClient.GetCveDataAsync(startIndex, application, vendor,version);
                 ViewBag.CveData = cveData;
             }
             catch (Exception ex)
