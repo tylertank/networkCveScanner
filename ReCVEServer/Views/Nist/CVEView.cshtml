@@ -1,0 +1,32 @@
+﻿
+@model IEnumerable<ReCVEServer.Models.CVE>
+
+@{
+    ViewData["Title"] = "CVEView";
+
+    List<CVE> allCVEs = new List<CVE>();
+    foreach (var CVE in Model)
+    {
+        allCVEs.Add(CVE);
+    }
+    allCVEs.OrderBy(c => c.baseScore).ThenBy(c => c.baseScore);
+}
+
+@section Scripts{
+
+  <script src="~/js/CVE/severityChart.js" asp-append-version="true"></script> 
+ 
+}
+
+<h1>CVEView</h1>
+
+<br />
+<button class="btn btn-warning" id="get_data" onclick="fetchCveChartData('@Url.Action("getSeverityRating", "nist")', 'cvePieChart', createChart)">Get Data</button>
+
+
+<hr>
+
+
+<div id="cvePieChart"></div>
+
+
