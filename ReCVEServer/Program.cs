@@ -42,7 +42,8 @@ using (var scope = app.Services.CreateScope())
     var context =
        services.GetRequiredService<ReCVEServerContext>();
     context.Database.EnsureCreated();
-    DbInitializer.Initialize(context);
+    DbInitializer.InitializeClients(context);
+    DbInitializer.InitializeSoftware(context);
 }
 
 app.UseHttpsRedirection();
