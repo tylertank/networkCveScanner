@@ -15,6 +15,10 @@ namespace ReCVEServer.Controllers {
         }
 
         public async Task<ActionResult> Index() {
+           return View();
+        }
+        [HttpPost]
+        public async Task<ActionResult> QueryAPI() {
             int startIndex = 0;
             string application = "windows_10";
             string version = "22h2";
@@ -53,17 +57,13 @@ namespace ReCVEServer.Controllers {
                     _context.CVEs.Add(tempCVE);
                 }
                 await _context.SaveChangesAsync();
-
-
             }
             catch (Exception ex) {
                 ViewBag.Error = ex.Message;
 
             }
-            return View(_context.CVEs.ToListAsync());
+            return Ok();
         }
-
-
         public async Task<IActionResult> CVEView() {
 
             return View(await _context.CVEs.ToListAsync());
@@ -73,7 +73,7 @@ namespace ReCVEServer.Controllers {
 
 
         [HttpGet]
-        public async Task<IActionResult> GetCveChartData() {
+        public async Task<IActionResult> getSeverityRating() {
             var cves = await _context.CVEs.ToListAsync();
 
             var baseScoreCounts = cves

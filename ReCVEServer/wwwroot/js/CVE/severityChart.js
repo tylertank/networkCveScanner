@@ -1,4 +1,4 @@
-$($("#spinner").hide());
+
 function fetchCveChartData(url, elementId, onSuccess) {
   
     fetch(url)
