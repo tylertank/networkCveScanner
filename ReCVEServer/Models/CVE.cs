@@ -3,8 +3,9 @@
     public class CVE
     {
         public int ID { get; set; }
-        public string? Name { get; set; }
-        public string? IPAddress { get; set; }
-        public DateTime EnrollmentDate { get; set; }
+        public string cveID { get; set; }
+        public string? description { get; set; }
+        public DateTime published { get; set; }
+        public double baseScore { get; set; }
     }
 }

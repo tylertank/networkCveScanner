@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ReCVEServer.Data;
 
@@ -11,9 +12,10 @@ using ReCVEServer.Data;
 namespace ReCVEServer.Migrations
 {
     [DbContext(typeof(ReCVEServerContext))]
-    partial class ReCVEServerContextModelSnapshot : ModelSnapshot
+    [Migration("20230406021059_updaingCVETable")]
+    partial class updaingCVETable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -256,10 +258,6 @@ namespace ReCVEServer.Migrations
 
                     b.Property<double>("baseScore")
                         .HasColumnType("float");
-
-                    b.Property<string>("cveID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("description")
                         .HasColumnType("nvarchar(max)");

@@ -1,5 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using NuGet.Packaging;
 using ReCVEServer.Data;
+using ReCVEServer.Models;
 using System.Diagnostics.SymbolStore;
 using static System.Net.WebRequestMethods;
 
@@ -14,13 +17,41 @@ namespace ReCVEServer.NistApi
         {
             _config = config;
         }
-
-        public async Task<string> GetCveDataAsync(int startIndex, string application,string vendor, string version)
+        public async Task<List<NistApi.Cve>> FetchAllVulnerabilitiesAsync(string application, string vendor, string version)
         {
+            var allVulnerabilities = new List<NistApi.Cve>();
+
+            // Fetch the first page
+            var apiResponse = await GetCveData(0, application, vendor, version);
+
+            // Calculate the number of pages
+            int totalPages = (int)Math.Ceiling((double)apiResponse.totalResults / apiResponse.resultsPerPage);
+
+            // Add the first page's vulnerabilities to the list
+            allVulnerabilities.AddRange(apiResponse.vulnerabilities);
+
+            // Fetch the remaining pages
+            if(totalPages > 1){
+
+            for (int pageIndex = 1; pageIndex < totalPages; pageIndex++){
+                apiResponse = await GetCveData(pageIndex, application, vendor, version);
+                allVulnerabilities.AddRange(apiResponse.vulnerabilities);
+            }
+            }
+
+
+
+            return allVulnerabilities;
+        }
+
+
+        public async Task<ApiResponse> GetCveData(int pageIndex, string application,string vendor, string version)
+        {
+            string allData = "";
             using var client = new HttpClient();
             client.DefaultRequestHeaders.Add("apiKey", _config.ApiKey);
 
-             var requestUrl = $"{_config.BaseUrl}:o:{vendor}:{application}:{version}&startIndex={startIndex}";
+             var requestUrl = $"{_config.BaseUrl}:o:{vendor}:{application}:{version}&startIndex={pageIndex}";
             //var requestUrl = "https://services.nvd.nist.gov/rest/json/cves/2.0?cpeName=cpe:2.3:o:microsoft:windows_10:22h2&startIndex=0"; basic syntax for api request
             var response = await client.GetAsync(requestUrl);
 
@@ -29,8 +60,8 @@ namespace ReCVEServer.NistApi
             // if this is failing have you added the api key to user.secrets?
                 throw new Exception($"Request failed: "); //{message}
             }
-
-            return await response.Content.ReadAsStringAsync();
+            string jsonResponse = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<ApiResponse>(jsonResponse);
         }
     }
 
