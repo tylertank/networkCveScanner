@@ -1,9 +1,9 @@
 ﻿namespace ReCVEServer.Models
 {
-    public class Vulnerability
+    public class Software
     {
         public int ID { get; set; } 
-        public Computer computer { get; set; }
+        public Client client { get; set; }
         public CVE CVE { get; set; }
         public string? status { get; set; } 
         public string? details { get; set; }
