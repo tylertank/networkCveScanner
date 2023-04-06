@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ReCVEServer.Data;
 using ReCVEServer.Models;
 using ReCVEServer.NistApi;
@@ -50,14 +51,42 @@ namespace ReCVEServer.Controllers
                         }
                 await _context.SaveChangesAsync();
 
-                ViewBag.CveData = _context.CVEs.ToList();
+                 
             }
             catch (Exception ex)
             {
                 ViewBag.Error = ex.Message;
            
             }
-                return View();
+                return View(_context.CVEs.ToListAsync());
         }
+
+        
+        public async Task<IActionResult> CVEView()
+        {
+
+            return View(await _context.CVEs.ToListAsync());
+        }
+
+        // Add this using statement at the top of your controller file
+
+
+    [HttpGet]
+    public async Task<IActionResult> GetCveChartData()
+    {
+        var cves = await _context.CVEs.ToListAsync();
+
+        var baseScoreCounts = cves
+            .GroupBy(c => c.baseScore)
+            .Select(g => new
+            {
+                BaseScore = g.Key,
+                Count = g.Count()
+            })
+            .ToList();
+
+        return Json(baseScoreCounts);
     }
+
+}
 }
