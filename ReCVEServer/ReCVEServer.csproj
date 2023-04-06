@@ -8,6 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="wwwroot\js\CVE\severityChart.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\js\CVE\severityChart.js" />
     <None Include="wwwroot\js\CVE\Chart.js" />
   </ItemGroup>
 

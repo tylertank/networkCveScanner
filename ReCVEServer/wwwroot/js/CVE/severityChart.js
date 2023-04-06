@@ -1,4 +1,6 @@
+$($("#spinner").hide());
 function fetchCveChartData(url, elementId, onSuccess) {
+  
     fetch(url)
     // Rest of the function remains the same
         .then(response => {
@@ -18,7 +20,7 @@ function fetchCveChartData(url, elementId, onSuccess) {
 function createChart(data, elementId) {
     var chartData = data.map(function (item) {
         return {
-            name: 'Base Score: ' + item.baseScore,
+            name: item.baseSeverity,
             y: item.count
         };
     });

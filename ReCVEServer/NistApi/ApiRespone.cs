@@ -38,19 +38,33 @@ namespace ReCVEServer.NistApi
     public class Metrics
     {
         [JsonProperty("cvssMetricV30")]
-        public List<CvssMetricV3> CvssMetricV3List { get; set; }
+        public List<CvssMetric> CvssMetricV3List { get; set; }
+        [JsonProperty("cvssMetricV2")]
+        public List<CvssMetric> CvssMetricV2List { get; set; }
+        [JsonProperty("cvssMetricV31")]
+        public List<CvssMetric> CvssMetricV31List { get; set; }
     }
 
-    public class CvssMetricV3
+    public class CvssMetric
     {
         [JsonProperty("cvssData")]
         public CvssData CvssData { get; set; }
+        [JsonProperty("baseSeverity")]
+        public string Severity { get; set; }
+        
     }
-
+    public class BaseSeverity
+    {
+     
+        [JsonProperty("baseSeverity")]
+        public string baseSeverity { get; set;}
+    }
     public class CvssData
     {
         [JsonProperty("baseScore")]
         public double BaseScore { get; set; }
+        [JsonProperty("baseSeverity")]
+        public string Severity { get; set; }
     }
     public class Description
     {
