@@ -8,5 +8,11 @@
         public DateTime published { get; set; }
         public double baseScore { get; set; }
         public string? baseSeverity {  get; set; }
+
+        public string? vendor { get; set; }
+
+        public string? application { get; set; }
+
+        public string? version { get; set; }
     }
 }
