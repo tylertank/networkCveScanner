@@ -14,5 +14,6 @@
         public string? application { get; set; }
 
         public string? version { get; set; }
+        public ICollection<Vulnerability> Vulnerabilities { get; set; }
     }
 }

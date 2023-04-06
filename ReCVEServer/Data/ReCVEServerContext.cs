@@ -16,7 +16,7 @@ public class ReCVEServerContext : IdentityDbContext<ReCVEServerUser>
     public DbSet<Client> Clients { get; set; }
     public DbSet<CVE> CVEs { get; set; }
     public DbSet<Software> Softwares { get; set; }
-
+    public DbSet<Vulnerability> Vulnerabilities { get; set; }
     public DbSet<Status> Statuses { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)

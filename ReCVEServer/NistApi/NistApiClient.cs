@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using NuGet.Packaging;
 using ReCVEServer.Data;
@@ -16,6 +17,54 @@ namespace ReCVEServer.NistApi
         public NistApiClient(NistApiConfig config)
         {
             _config = config;
+        }
+        public async Task<bool> checkSoftware() {
+            int startIndex = 0;
+            string application = "windows_10";
+            string version = "22h2";
+            string vendor = "microsoft";
+            int count = 0;
+            try {
+                CVE tempCVE;
+                List<CVE> CVEs = new List<CVE>();
+                
+                var allVulnerabilities = await FetchAllVulnerabilitiesAsync(application, vendor, version);
+
+                foreach (var vulnerability in allVulnerabilities) {
+                    count++;
+                    tempCVE = new CVE();
+                    tempCVE.cveID = vulnerability.Data.Id;
+                    tempCVE.published = vulnerability.Data.Published;
+                    tempCVE.vendor = vendor;
+                    tempCVE.version = version;
+                    tempCVE.application = application;
+
+                    if (vulnerability.Data.Metrics.CvssMetricV3List != null) {
+                        tempCVE.baseSeverity = vulnerability.Data.Metrics.CvssMetricV3List.First().CvssData.Severity;
+                        tempCVE.baseScore = vulnerability.Data.Metrics.CvssMetricV3List.First().CvssData.BaseScore;
+                    }
+                    else if (vulnerability.Data.Metrics.CvssMetricV31List != null) {
+                        tempCVE.baseSeverity = vulnerability.Data.Metrics.CvssMetricV31List.First().CvssData.Severity;
+                        tempCVE.baseScore = vulnerability.Data.Metrics.CvssMetricV31List.First().CvssData.BaseScore;
+                    }
+                    else if (vulnerability.Data.Metrics.CvssMetricV2List != null) {
+                        tempCVE.baseSeverity = vulnerability.Data.Metrics.CvssMetricV2List.First().Severity;
+                        tempCVE.baseScore = vulnerability.Data.Metrics.CvssMetricV2List.First().CvssData.BaseScore;
+                    }
+                    else {
+
+                        tempCVE.baseScore = -1.0;
+                        tempCVE.baseSeverity = "notFound";
+                    }
+                    tempCVE.description = vulnerability.Data.Descriptions.First().Value;
+                    _context.CVEs.Add(tempCVE);
+                }
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex) {
+                return false;
+            }
+            return true;
         }
         public async Task<List<NistApi.Cve>> FetchAllVulnerabilitiesAsync(string application, string vendor, string version)
         {
