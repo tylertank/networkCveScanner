@@ -10,7 +10,7 @@ namespace ReCVEServer.Controllers {
         private readonly ReCVEServerContext _context;
         public NistController(NistApiConfig config, ReCVEServerContext context) {
             // Load the API key from the configuration
-            _nistApiClient = new NistApiClient(config);
+            _nistApiClient = new NistApiClient(config, context);
             _context = context;
         }
 
@@ -20,7 +20,7 @@ namespace ReCVEServer.Controllers {
         [HttpPost]
         public async Task<ActionResult> QueryAPI() {
             try {
-
+               await _nistApiClient.checkSoftware();
             }
             catch (Exception ex) {
                 ViewBag.Error = ex.Message;

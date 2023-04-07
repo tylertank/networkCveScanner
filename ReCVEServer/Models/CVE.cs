@@ -1,8 +1,11 @@
-﻿namespace ReCVEServer.Models
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
+namespace ReCVEServer.Models
 {
     public class CVE
     {
         public int ID { get; set; }
+
         public string cveID { get; set; }
         public string? description { get; set; }
         public DateTime published { get; set; }

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using ReCVEServer.Areas.Identity.Data;
 using ReCVEServer.Models;
 using System.Diagnostics;
+using System.Reflection.Emit;
 
 namespace ReCVEServer.Data;
 
@@ -22,14 +23,16 @@ public class ReCVEServerContext : IdentityDbContext<ReCVEServerUser>
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-        // Customize the ASP.NET Identity model and override the defaults if needed.
-        // For example, you can rename the ASP.NET Identity table names and more.
-        // Add your customizations after calling base.OnModelCreating(builder);
+        builder.Entity<CVE>()
+          .HasIndex(c => new { c.cveID, c.vendor, c.application, c.version })
+          .IsUnique();
+
+
     }
 
     public static class DbInitializer
     {
-        public static void InitializeClients(ReCVEServerContext context) {
+        public static async Task InitializeClients(ReCVEServerContext context) {
             context.Database.EnsureCreated();
 
             List<Client> clients = new List<Client>();
@@ -37,8 +40,8 @@ public class ReCVEServerContext : IdentityDbContext<ReCVEServerUser>
             Client client1 = new Client {
                 Name = "Client A",
                 IPAddress = "192.168.0.1",
-                OS = "Windows",
-                OSVersion = "10",
+                OS = "Windows 10",
+                OSVersion = "20h2",
                 EnrollmentDate = new DateTime(2022, 3, 15)
             };
 
@@ -53,8 +56,8 @@ public class ReCVEServerContext : IdentityDbContext<ReCVEServerUser>
             Client client3 = new Client {
                 Name = "Client C",
                 IPAddress = "192.168.0.3",
-                OS = "Windows",
-                OSVersion = "8.1",
+                OS = "Windows 10",
+                OSVersion = "1903",
                 EnrollmentDate = new DateTime(2022, 2, 10)
             };
 
@@ -69,8 +72,8 @@ public class ReCVEServerContext : IdentityDbContext<ReCVEServerUser>
             Client client5 = new Client {
                 Name = "Client E",
                 IPAddress = "192.168.0.5",
-                OS = "Windows",
-                OSVersion = "11",
+                OS = "Windows 11",
+                OSVersion = "22h2",
                 EnrollmentDate = new DateTime(2022, 5, 20)
             };
             context.Clients.Add(client1);
@@ -78,9 +81,9 @@ public class ReCVEServerContext : IdentityDbContext<ReCVEServerUser>
             context.Clients.Add(client3);
             context.Clients.Add(client4);
             context.Clients.Add(client5);
-             context.SaveChangesAsync();
+            await context.SaveChangesAsync();
         }
-        public static void InitializeSoftware(ReCVEServerContext context)
+        public static async Task InitializeSoftware(ReCVEServerContext context)
         {
             context.Database.EnsureCreated();
             List<Client> clients = context.Clients.ToList();
@@ -174,7 +177,7 @@ public class ReCVEServerContext : IdentityDbContext<ReCVEServerUser>
             context.Softwares.Add(software9);
             context.Softwares.Add(software10);
 
-            context.SaveChanges();
+           await context.SaveChangesAsync();
         }
     }
 }
