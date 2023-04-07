@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ReCVEServer.Data;
 
@@ -11,9 +12,10 @@ using ReCVEServer.Data;
 namespace ReCVEServer.Migrations
 {
     [DbContext(typeof(ReCVEServerContext))]
-    partial class ReCVEServerContextModelSnapshot : ModelSnapshot
+    [Migration("20230406224834_softwareCols")]
+    partial class softwareCols
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

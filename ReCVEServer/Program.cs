@@ -41,8 +41,14 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     var context =
        services.GetRequiredService<ReCVEServerContext>();
-    context.Database.EnsureCreated();
-    DbInitializer.Initialize(context);
+
+
+    if (context.Database.EnsureCreated())
+    {
+
+       await DbInitializer.InitializeClients(context);
+       await DbInitializer.InitializeSoftware(context);
+    }
 }
 
 app.UseHttpsRedirection();
