@@ -7,9 +7,13 @@ namespace ReCVEServer.Networking
 {
     public class Server
     {
+        public static void main(string[] args)
+        {
+            serverSock();
+        }
        public static async void serverSock()
         {
-            Console.WriteLine("I made it into serverSock");
+            System.Diagnostics.Debug.WriteLine("I made it into serverSock");
             IPHostEntry entry = await Dns.GetHostEntryAsync("localhost");
             IPAddress iPAddress = entry.AddressList[0];
             IPEndPoint epEndPoint = new(iPAddress,11_000);
@@ -18,7 +22,7 @@ namespace ReCVEServer.Networking
             Console.WriteLine("We're now waiting for a connection");
             listener.Start();
             using TcpClient handler = await listener.AcceptTcpClientAsync();
-            Console.WriteLine("We got a connection");
+            System.Diagnostics.Debug.WriteLine("We got a connection");
             await using NetworkStream stream = handler.GetStream();
 
             string message = "hello world";
@@ -26,15 +30,8 @@ namespace ReCVEServer.Networking
             await stream.WriteAsync(enMessage);
             byte[] buffer = new byte[1024];
             await stream.ReadAsync(buffer);
-            Console.WriteLine(buffer.ToString());
+            System.Diagnostics.Debug.WriteLine(buffer.ToString());
 
-
-            //adding a comment so I can test something
-
-            while(true)
-            {
-
-            }
         }
     }
 }

@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Identity;
 using ReCVEServer.Areas.Identity.Data;
 using static ReCVEServer.Data.ReCVEServerContext;
+using ReCVEServer.Networking;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -25,7 +26,6 @@ builder.Services.AddSingleton<NistApiConfig>(provider =>
     var configuration = provider.GetService<IConfiguration>();
     return new NistApiConfig(configuration);
 });
-
 builder.Services.AddTransient<NistApiClient>();
 var app = builder.Build();
 
@@ -62,3 +62,4 @@ app.MapControllerRoute(
 app.MapControllers();
 app.MapRazorPages();
 app.Run();
+
