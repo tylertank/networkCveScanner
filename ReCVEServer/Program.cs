@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Identity;
 using ReCVEServer.Areas.Identity.Data;
 using static ReCVEServer.Data.ReCVEServerContext;
+using ReCVEServer.Networking;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -27,7 +28,14 @@ builder.Services.AddSingleton<NistApiConfig>(provider =>
 });
 
 builder.Services.AddTransient<NistApiClient>();
+builder.Services.AddSingleton<Server>();
+
 var app = builder.Build();
+app.Services.GetService<IHostApplicationLifetime>().ApplicationStarted.Register(() =>
+{
+    var server = app.Services.GetService<Server>();
+    server.StartAsync();
+});
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -68,3 +76,4 @@ app.MapControllerRoute(
 app.MapControllers();
 app.MapRazorPages();
 app.Run();
+
