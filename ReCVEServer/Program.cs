@@ -26,8 +26,16 @@ builder.Services.AddSingleton<NistApiConfig>(provider =>
     var configuration = provider.GetService<IConfiguration>();
     return new NistApiConfig(configuration);
 });
+
 builder.Services.AddTransient<NistApiClient>();
+builder.Services.AddSingleton<Server>();
+
 var app = builder.Build();
+app.Services.GetService<IHostApplicationLifetime>().ApplicationStarted.Register(() =>
+{
+    var server = app.Services.GetService<Server>();
+    server.StartAsync();
+});
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
