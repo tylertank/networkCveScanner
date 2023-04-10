@@ -48,6 +48,8 @@ using (var scope = app.Services.CreateScope())
 
        await DbInitializer.InitializeClients(context);
        await DbInitializer.InitializeSoftware(context);
+       await DbInitializer.InitializeStatus(context);
+
     }
 }
 
@@ -65,6 +67,11 @@ app.MapControllerRoute(
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Nist}/{action=Index}/{id?}");
+app.UseEndpoints(endpoints => {
+    endpoints.MapControllerRoute(
+        name: "default",
+        pattern: "{controller=Device}/{action=Index}/{id?}");
+});
 app.MapControllers();
 app.MapRazorPages();
 app.Run();
