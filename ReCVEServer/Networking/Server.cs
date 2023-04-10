@@ -16,17 +16,35 @@ namespace ReCVEServer.Networking
     {
         private readonly ReCVEServerContext _context;
         private readonly IServiceScopeFactory _scopeFactory;
+        /// <summary>
+        ///  This is the server constructor for the server class
+        ///  In order for server to be called in the program.cs builder we need to alter the scope of 
+        ///  the server class
+        ///  we do this using iservicescopefactory as seen below
+        /// </summary>
+
+
         public Server(IServiceScopeFactory serviceScopeFactory)//ReCVEServerContext context,
         {
             _scopeFactory = serviceScopeFactory;
             serverSock();
             // _context = context;
         }
+
+        /// <summary>
+        ///  This also helps the builder in program.cs run the server class
+        /// </summary>
+
         public async Task StartAsync()
         {
 
             Console.WriteLine("\n\n\nI made it to start async\n\n\n");
         }
+        /// <summary>
+        /// This is the landing method for server, this is where the server is started 
+        /// connecting clients are given seperate threads from here to interact with the server
+        /// </summary>
+
         public async void serverSock()
         {
             using (var scope = _scopeFactory.CreateScope())
@@ -51,8 +69,13 @@ namespace ReCVEServer.Networking
 
             }
         }
-        //This method sends the json to the appropiate method to be parsed and later stored in the database
-        public async void directClient(object obj)
+        /// <summary>
+        ///  when the server recieves a json from the client it'll be directed here to be parsed
+        ///  depending on the type of json it'll be sent to the appropiate function to have the 
+        ///  information extracted
+        /// </summary>
+
+        private void directClient(object obj)
         {
             TcpClient handler = (TcpClient)obj;
             NetworkStream stream = handler.GetStream();
@@ -61,7 +84,6 @@ namespace ReCVEServer.Networking
             var jResults = JObject.Parse(jsonS);
             var IDVal =jResults.GetValue("id");
             var typeVal = jResults.GetValue("type");
-            //System.Diagnostics.Debug.WriteLine(print);
             if (jResults.Value<string>("id") == "null")
             {
                 clientHandshake(jResults);
@@ -76,20 +98,28 @@ namespace ReCVEServer.Networking
             }
            handler.Close();
         }
-        public async void clientHandshake(JObject jResults)
+        /// <summary>
+        ///  When a client connects for the first time it'll send a client handshake json
+        ///  this'll give the server the needed information to identify the client in the database
+        ///  the server will also send an ack json to the client so they know what their client id is 
+        ///  going forward
+        /// </summary>
+
+        private void clientHandshake(JObject jResults)
         {
             System.Diagnostics.Debug.WriteLine("made it to client handshake");
-   
+
             var info = jResults.GetValue("info");
             var temp = info.First();
             var computer = temp.Value<string>("computer");
             var ip = temp.Value<string>("ip");
-            
-            //process client hello and get computer addresss and ip out of it
-            //create serverAck with client id
             //send server ack to cilent
         }
-        public async void processScan(JObject jResults)
+        /// <summary>
+        ///  When the client sends a scan of their machine it'll be processed here
+        /// </summary>
+
+        private void processScan(JObject jResults)
         {
             System.Diagnostics.Debug.WriteLine("made it to process scan");
             int id = jResults.Value<int>("id");
@@ -99,12 +129,13 @@ namespace ReCVEServer.Networking
                 //do something with each object
                 System.Diagnostics.Debug.WriteLine(i);
             }
-            //how do we store vendor application version?
-            //maybe just an array?
-            
-            //process scan and put in database
         }
-        public async void processStatus(JObject jResults)
+        /// <summary>
+        ///  When the client sends an updated status think task manager type information
+        ///  it'll be processed here
+        /// </summary>
+
+        private void processStatus(JObject jResults)
         {
             System.Diagnostics.Debug.WriteLine("made it to process status");
             int id = jResults.Value<int>("id");
@@ -114,11 +145,7 @@ namespace ReCVEServer.Networking
                 //do something with each object
                 System.Diagnostics.Debug.WriteLine(i);
             }
-            //process status and put in data base
         }
-
-
-
 
 
         //***************************************************************************************************************************
