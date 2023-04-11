@@ -8,13 +8,16 @@ using System.Threading.Tasks;
 using ReCVEServer.Networking.Extensions;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Linq;
+using static ReCVEServer.Data.ReCVEServerContext;
+using ReCVEServer.Models;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace ReCVEServer.Networking
 {
 
     public class Server
     {
-        private readonly ReCVEServerContext _context;
+       // private  ReCVEServerContext _context;
         private readonly IServiceScopeFactory _scopeFactory;
         /// <summary>
         ///  This is the server constructor for the server class
@@ -24,11 +27,10 @@ namespace ReCVEServer.Networking
         /// </summary>
 
 
-        public Server(IServiceScopeFactory serviceScopeFactory)//ReCVEServerContext context,
+        public Server(IServiceScopeFactory serviceScopeFactory)
         {
             _scopeFactory = serviceScopeFactory;
-            serverSock();
-            // _context = context;
+             serverSock();
         }
 
         /// <summary>
@@ -37,8 +39,6 @@ namespace ReCVEServer.Networking
 
         public async Task StartAsync()
         {
-
-            Console.WriteLine("\n\n\nI made it to start async\n\n\n");
         }
         /// <summary>
         /// This is the landing method for server, this is where the server is started 
@@ -47,11 +47,6 @@ namespace ReCVEServer.Networking
 
         public async void serverSock()
         {
-            using (var scope = _scopeFactory.CreateScope())
-            {
-                var context = scope.ServiceProvider.GetService<ReCVEServerContext>();
-                // var contextList = context.Softwares.ToList();
-
                 System.Diagnostics.Debug.WriteLine("I made it into serverSock");
                 IPEndPoint epEndPoint = new(IPAddress.Any, 5004);
                 TcpListener listener = new(epEndPoint);
@@ -62,12 +57,9 @@ namespace ReCVEServer.Networking
                 while (true)
                 {
                     TcpClient handler = await listener.AcceptTcpClientAsync();
-
                     Thread t = new Thread(new ParameterizedThreadStart(directClient));
                     t.Start(handler);
                 }
-
-            }
         }
         /// <summary>
         ///  when the server recieves a json from the client it'll be directed here to be parsed
@@ -75,26 +67,30 @@ namespace ReCVEServer.Networking
         ///  information extracted
         /// </summary>
 
-        private void directClient(object obj)
+        private async void directClient(object obj)
         {
             TcpClient handler = (TcpClient)obj;
             NetworkStream stream = handler.GetStream();
-            Task<string> jString = ReceiveData(stream);
-            string jsonS = jString.Result;
-            var jResults = JObject.Parse(jsonS);
-            var IDVal =jResults.GetValue("id");
-            var typeVal = jResults.GetValue("type");
-            if (jResults.Value<string>("id") == "null")
-            {
-                clientHandshake(jResults);
-            }
-            else if (jResults.Value<string>("type") == "scan")
-            {
-                processScan(jResults);
-            }
-            else if(jResults.Value<string>("type") == "process")
-            {
-                processStatus(jResults);
+            while (handler.Connected)
+            {   
+                Task<string> jString = ReceiveData(stream);
+                jString.Wait();
+                string jsonS = jString.Result;
+                var jResults = JObject.Parse(jsonS);
+                var IDVal = jResults.GetValue("id");
+                var typeVal = jResults.GetValue("type");
+                if (jResults.Value<string>("id") == "null")
+                {
+                    await clientHandshake(jResults);
+                }
+                else if (jResults.Value<string>("type") == "scan")
+                {
+                   await processScan(jResults);
+                }
+                else if (jResults.Value<string>("type") == "process")
+                {
+                    await processStatus(jResults);
+                }
             }
            handler.Close();
         }
@@ -105,29 +101,58 @@ namespace ReCVEServer.Networking
         ///  going forward
         /// </summary>
 
-        private void clientHandshake(JObject jResults)
+        private async Task clientHandshake(JObject jResults)
         {
             System.Diagnostics.Debug.WriteLine("made it to client handshake");
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                ReCVEServerContext _context = scope.ServiceProvider.GetService<ReCVEServerContext>();
+                //Extract the data from the json
+                var info = jResults.GetValue("info");
+                var temp = info.First();
+                var computer = temp.Value<string>("computer");
+                var ip = temp.Value<string>("ip");
+                var os = temp.Value<string>("OS");
+                var osVersion = temp.Value<string>("OSVersion");
 
-            var info = jResults.GetValue("info");
-            var temp = info.First();
-            var computer = temp.Value<string>("computer");
-            var ip = temp.Value<string>("ip");
-            //send server ack to cilent
+                //parse the data into a client object
+                Client client = new Client();
+                client.IPAddress = ip;
+                client.Name = computer;
+                client.OS = os;
+                client.OSVersion = osVersion;
+                client.EnrollmentDate = DateTime.Now;
+
+                //add the client object to the database  and save it
+                _context.Clients.Add(client);
+                await _context.SaveChangesAsync();
+            }
         }
+
         /// <summary>
         ///  When the client sends a scan of their machine it'll be processed here
         /// </summary>
 
-        private void processScan(JObject jResults)
+        private async Task processScan(JObject jResults)
         {
-            System.Diagnostics.Debug.WriteLine("made it to process scan");
-            int id = jResults.Value<int>("id");
-            var objects = jResults.GetValue("objects");
-            for( int i=0; i < objects.Count(); i++)
+            using (var scope = _scopeFactory.CreateScope())
             {
-                //do something with each object
-                System.Diagnostics.Debug.WriteLine(i);
+                ReCVEServerContext _context = scope.ServiceProvider.GetService<ReCVEServerContext>();
+                System.Diagnostics.Debug.WriteLine("made it to process scan");
+                int id = jResults.Value<int>("id");
+                var objects = jResults.GetValue("objects");
+                var cliList = _context.Clients.ToList();
+                for (int i = 0; i < objects.Count(); i++)
+                {
+                    Software tempSoftware = new Software();
+                    var current = objects[i];
+                    tempSoftware.vendor = current.Value<string>("vendor");
+                    tempSoftware.application = current.Value<string>("application");
+                    tempSoftware.version = current.Value<string>("version");
+                    tempSoftware.client = cliList[id - 1];
+                    _context.Softwares.Add(tempSoftware);
+                }
+                await _context.SaveChangesAsync();
             }
         }
         /// <summary>
@@ -135,15 +160,24 @@ namespace ReCVEServer.Networking
         ///  it'll be processed here
         /// </summary>
 
-        private void processStatus(JObject jResults)
+        private async Task processStatus(JObject jResults)
         {
-            System.Diagnostics.Debug.WriteLine("made it to process status");
-            int id = jResults.Value<int>("id");
-            var objects = jResults.GetValue("objects");
-            for (int i = 0; i < objects.Count(); i++)
+            using (var scope = _scopeFactory.CreateScope())
             {
-                //do something with each object
-                System.Diagnostics.Debug.WriteLine(i);
+                ReCVEServerContext _context = scope.ServiceProvider.GetService<ReCVEServerContext>();
+                System.Diagnostics.Debug.WriteLine("made it to process status");
+                int id = jResults.Value<int>("id");
+                var objects = jResults.GetValue("objects");
+                for (int i = 0; i < objects.Count(); i++)
+                {
+                    var current = objects[i];
+                    Status tempStatus = new Status();
+                    tempStatus.memory = current.Value<float>("mem");
+                    tempStatus.processStatus = current.Value<string>("process");
+                    tempStatus.cpu = current.Value<float>("cpu");
+                    _context.Statuses.Add(tempStatus);
+                }
+                await _context.SaveChangesAsync();
             }
         }
 
