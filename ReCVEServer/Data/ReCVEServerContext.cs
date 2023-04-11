@@ -179,33 +179,38 @@ public class ReCVEServerContext : IdentityDbContext<ReCVEServerUser>
         }
         public static async Task InitializeStatus(ReCVEServerContext context) {
             Status status1 = new Status {
+                clientID = 1,
                 processStatus = "Running",
-                cpu = 0.25f,
-                memory = 0.35f
+                cpu = 1.25f,
+                memory = 0.00f
             };
 
             Status status2 = new Status {
+                clientID = 1,
                 processStatus = "Stopped",
                 cpu = 0.0f,
                 memory = 0.0f
             };
 
             Status status3 = new Status {
+                clientID = 1,
                 processStatus = "Error",
                 cpu = 0.0f,
                 memory = 0.0f
             };
 
             Status status4 = new Status {
+                clientID = 1,
                 processStatus = "Idle",
-                cpu = 0.05f,
-                memory = 0.10f
+                cpu = 0.00f,
+                memory = 1.10f
             };
 
             Status status5 = new Status {
+                clientID = 1,
                 processStatus = "Busy",
-                cpu = 0.75f,
-                memory = 0.90f
+                cpu = 10.75f,
+                memory = 10.00f
             };
             context.Statuses.Add(status1);
             context.Statuses.Add(status2);

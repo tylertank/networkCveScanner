@@ -168,14 +168,28 @@ namespace ReCVEServer.Networking
                 System.Diagnostics.Debug.WriteLine("made it to process status");
                 int id = jResults.Value<int>("id");
                 var objects = jResults.GetValue("objects");
+
+
+
                 for (int i = 0; i < objects.Count(); i++)
                 {
                     var current = objects[i];
                     Status tempStatus = new Status();
+                    tempStatus.clientID = id;
                     tempStatus.memory = current.Value<float>("mem");
                     tempStatus.processStatus = current.Value<string>("process");
                     tempStatus.cpu = current.Value<float>("cpu");
-                    _context.Statuses.Add(tempStatus);
+                    var existingStatus = _context.Statuses.FirstOrDefault(s => s.clientID == tempStatus.clientID && s.processStatus == tempStatus.processStatus);
+
+                    if (existingStatus != null) {
+                        // Update the existing entry
+                        existingStatus.memory = tempStatus.memory;
+                        existingStatus.cpu = tempStatus.cpu;
+                    }
+                    else {
+                        // Add a new entry
+                        _context.Statuses.Add(tempStatus);
+                    }
                 }
                 await _context.SaveChangesAsync();
             }
