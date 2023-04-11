@@ -109,7 +109,7 @@ namespace ReCVEServer.Networking
         ///  going forward
         /// </summary>
 
-        private async Task<bool> clientHandshake(JObject jResults)
+        private async Task clientHandshake(JObject jResults)
         {
                 System.Diagnostics.Debug.WriteLine("made it to client handshake");
 
@@ -127,9 +127,7 @@ namespace ReCVEServer.Networking
                 client.EnrollmentDate = DateTime.Now;
                 _context.Clients.Add(client);
                 await _context.SaveChangesAsync();
-                
                 var contextList = _context.Clients.ToList();
-                return true;
             
         }
         /// <summary>
