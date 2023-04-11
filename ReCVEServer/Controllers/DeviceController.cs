@@ -1,4 +1,5 @@
 ﻿    using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using NuGet.Protocol;
 using ReCVEServer.Data;
@@ -14,7 +15,9 @@ namespace ReCVEServer.Controllers {
             _context = context;
         }
         public async Task<ActionResult> Index() {
-            return View();
+            var clients = await _context.Clients.ToListAsync();
+            return View(clients);
+           
         }
         [HttpPost]
         public async Task<IActionResult> UpdateSystemInfo([FromBody] Status systemInfo) {
@@ -42,8 +45,8 @@ namespace ReCVEServer.Controllers {
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetSystemInfo() {
-            var systemInfo = await _context.Statuses.FindAsync(1);
+        public async Task<IActionResult> GetSystemInfo(int computerID) {
+            var systemInfo = await _context.Statuses.FindAsync(computerID);
 
             if (systemInfo == null) {
                 return NotFound();

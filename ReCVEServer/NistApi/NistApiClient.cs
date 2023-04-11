@@ -24,14 +24,19 @@ namespace ReCVEServer.NistApi
             _config = config;
             _context = context;
         }
+
+        /// <summary>
+        /// Checks the software version against the NIST API and updates the CVE database with any new vulnerabilities.
+        /// </summary>
         public async Task checkSoftware() {
          
             List<Software> allSoftware = _context.Softwares.ToList();
+            // Create a HashSet to store unique combinations of vendor, application, and version strings
             HashSet<string> uniqueCombinations = new HashSet<string>();
 
             foreach (Software software in allSoftware){
                 string combination = $"{software.vendor}-{software.application}-{software.version}";
-
+                // If the combination is not already in the HashSet, add it
                 if (!uniqueCombinations.Contains(combination)){
                     uniqueCombinations.Add(combination);
                 }
@@ -41,12 +46,19 @@ namespace ReCVEServer.NistApi
             
            
         }
+
+
+        /// <summary>
+        /// Sends a request to the NIST API with the specified software versions and updates the CVE database with any new vulnerabilities.
+        /// </summary>
+        /// <param name="softwares">The set of software versions to check.</param>
+        /// <returns>True if the operation succeeded, false otherwise.</returns>
         public async Task<bool> sendReq(HashSet<string> softwares)
         {
             try
             {
                 var existingCVEs = await _context.CVEs.ToListAsync();
-
+                // Loop through all software combinations in the HashSet
                 foreach (var s in softwares)
                 {
                    string test = s.Replace(' ', '_');
@@ -57,8 +69,10 @@ namespace ReCVEServer.NistApi
                     string version = software[2];
                 CVE tempCVE;
 
-                var allVulnerabilities = await FetchAllVulnerabilitiesAsync("a", application, vendor, version);
-                var newVulnerabilities = allVulnerabilities.Where(v => !existingCVEs.Any(e => e.cveID == v.Data.Id && e.vendor == vendor && e.application == application && e.version == version));
+                    // Fetch all vulnerabilities for the vendor, application, and version from the NIST API
+                    var allVulnerabilities = await FetchAllVulnerabilitiesAsync("a", application, vendor, version);
+                    // Filter out any vulnerabilities that are already in the database
+                    var newVulnerabilities = allVulnerabilities.Where(v => !existingCVEs.Any(e => e.cveID == v.Data.Id && e.vendor == vendor && e.application == application && e.version == version));
 
                     foreach (var vulnerability in newVulnerabilities)
                 {
@@ -106,6 +120,14 @@ namespace ReCVEServer.NistApi
             }
        
         }
+        /// <summary>
+        /// Fetches all the vulnerabilities for the specified software version from the NIST API.
+        /// </summary>
+        /// <param name="type">The type of CPE name to use for the search (a, o, h).</param>
+        /// <param name="application">The name of the application to search for.</param>
+        /// <param name="vendor">The name of the vendor to search for.</param>
+        /// <param name="version">The version of the software to search for.</param>
+        /// <returns>A list of vulnerabilities.</returns>
         public async Task<List<NistApi.Cve>> FetchAllVulnerabilitiesAsync(string type, string application, string vendor, string version)
         {
             var allVulnerabilities = new List<NistApi.Cve>();
@@ -131,7 +153,15 @@ namespace ReCVEServer.NistApi
             return allVulnerabilities;
         }
 
-
+        /// <summary>
+        /// Sends a request to the NIST API with the specified parameters and returns the response.
+        /// </summary>
+        /// <param name="type">The type of CPE name to use for the search (a, o, h).</param>
+        /// <param name="application">The name of the application to search for.</param>
+        /// <param name="vendor">The name of the vendor to search for.</param>
+        /// <param name="version">The version of the software to search for.</param>
+        /// <param name="pageIndex">The index of the page to fetch.</param>
+        /// <returns>The response from the NIST API.</returns>
         public async Task<ApiResponse> GetCveData(string type, string application,string vendor, string version, int pageIndex)
         {
             string allData = "";
@@ -142,6 +172,7 @@ namespace ReCVEServer.NistApi
             //var requestUrl = "https://services.nvd.nist.gov/rest/json/cves/2.0?cpeName=cpe:2.3:o:microsoft:windows_10:22h2&startIndex=0"; basic syntax for api request
             var response = await client.GetAsync(requestUrl);
 
+            // If the response is a "Too Many Requests" status code, wait for one second and try again
             if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
             {
                 await Task.Delay(1000);
@@ -155,7 +186,9 @@ namespace ReCVEServer.NistApi
             return JsonConvert.DeserializeObject<ApiResponse>(jsonResponse);
         }
     }
-
+    /// <summary>
+    /// Represents the configuration for the NIST API.
+    /// </summary>
     public class NistApiConfig
     {
         public string BaseUrl { get; set; }

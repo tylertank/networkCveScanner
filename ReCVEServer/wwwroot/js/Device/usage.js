@@ -27,16 +27,26 @@ const chart = Highcharts.chart('chart-container', {
 });
 
 async function updateChartData() {
-    const response = await fetch('/Device/GetSystemInfo'); // Replace this with the correct URL for your action method.
-    const latestData = await response.json();
 
+    var client = $("#client").val();
+    $.get({
+
+        url: "/device/GetSystemInfo/",
+        data: { computerID: client }
+
+    }).done(function (response) {
+   
     const currentTime = new Date().getTime();
-    const cpuUsageData = latestData.cpu;
-    const memoryUsageData = latestData.memory;
-
-    // Add new points to the chart
+    const cpuUsageData = response.cpu;
+    const memoryUsageData = response.memory;
     chart.series[0].addPoint([currentTime, cpuUsageData], true, false);
     chart.series[1].addPoint([currentTime, memoryUsageData], true, false);
-}
+    setInterval(updateChartData, 5000);
 
-setInterval(updateChartData, 5000);
+    }).catch(error => {
+        window.location.reload();
+        console.log("Error");
+    });
+
+ 
+}
