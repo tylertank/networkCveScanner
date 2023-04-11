@@ -30,8 +30,7 @@ public class ReCVEServerContext : IdentityDbContext<ReCVEServerUser>
 
     }
 
-    public static class DbInitializer
-    {
+    public static class DbInitializer {
         public static async Task InitializeClients(ReCVEServerContext context) {
             context.Database.EnsureCreated();
 
@@ -83,8 +82,7 @@ public class ReCVEServerContext : IdentityDbContext<ReCVEServerUser>
             context.Clients.Add(client5);
             await context.SaveChangesAsync();
         }
-        public static async Task InitializeSoftware(ReCVEServerContext context)
-        {
+        public static async Task InitializeSoftware(ReCVEServerContext context) {
             context.Database.EnsureCreated();
             List<Client> clients = context.Clients.ToList();
             Software software1 = new Software {
@@ -177,7 +175,45 @@ public class ReCVEServerContext : IdentityDbContext<ReCVEServerUser>
             context.Softwares.Add(software9);
             context.Softwares.Add(software10);
 
-           await context.SaveChangesAsync();
+            await context.SaveChangesAsync();
+        }
+        public static async Task InitializeStatus(ReCVEServerContext context) {
+            Status status1 = new Status {
+                processStatus = "Running",
+                cpu = 0.25f,
+                memory = 0.35f
+            };
+
+            Status status2 = new Status {
+                processStatus = "Stopped",
+                cpu = 0.0f,
+                memory = 0.0f
+            };
+
+            Status status3 = new Status {
+                processStatus = "Error",
+                cpu = 0.0f,
+                memory = 0.0f
+            };
+
+            Status status4 = new Status {
+                processStatus = "Idle",
+                cpu = 0.05f,
+                memory = 0.10f
+            };
+
+            Status status5 = new Status {
+                processStatus = "Busy",
+                cpu = 0.75f,
+                memory = 0.90f
+            };
+            context.Statuses.Add(status1);
+            context.Statuses.Add(status2);
+            context.Statuses.Add(status3);
+            context.Statuses.Add(status4);
+            context.Statuses.Add(status5);
+            await context.SaveChangesAsync();
+
         }
     }
 }
