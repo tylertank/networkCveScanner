@@ -11,6 +11,7 @@ using Newtonsoft.Json.Linq;
 using static ReCVEServer.Data.ReCVEServerContext;
 using ReCVEServer.Models;
 using static System.Formats.Asn1.AsnWriter;
+using Newtonsoft.Json;
 
 namespace ReCVEServer.Networking
 {
@@ -81,7 +82,12 @@ namespace ReCVEServer.Networking
                 var typeVal = jResults.GetValue("type");
                 if (jResults.Value<string>("id") == "null")
                 {
-                    await clientHandshake(jResults);
+                    Task<int> clientID = clientHandshake(jResults);
+                    clientID.Wait();
+                    ServerAck serverAck = new ServerAck();
+                    serverAck.id = clientID.Result;
+                    string json = JsonConvert.SerializeObject(serverAck);
+                    SendData(json, stream);
                 }
                 else if (jResults.Value<string>("type") == "scan")
                 {
@@ -101,7 +107,7 @@ namespace ReCVEServer.Networking
         ///  going forward
         /// </summary>
 
-        private async Task clientHandshake(JObject jResults)
+        private async Task<int> clientHandshake(JObject jResults)
         {
             System.Diagnostics.Debug.WriteLine("made it to client handshake");
             using (var scope = _scopeFactory.CreateScope())
@@ -126,7 +132,9 @@ namespace ReCVEServer.Networking
                 //add the client object to the database  and save it
                 _context.Clients.Add(client);
                 await _context.SaveChangesAsync();
+                return client.ID;
             }
+            
         }
 
         /// <summary>
@@ -181,7 +189,6 @@ namespace ReCVEServer.Networking
             }
         }
 
-
         //***************************************************************************************************************************
         //These methods are modified fromm the windows daemon created by trace engel
         
@@ -217,6 +224,18 @@ namespace ReCVEServer.Networking
             }
             return sb.ToString();
         }
+    }
+    public class ServerAck
+    {
+        
+        public string type { get; private set ; }
+        //type = "serverAck";
+        public int id { get; set; }
+        public ServerAck()
+        {
+            type = "serverAck";
+        }
+
     }
 }
 
