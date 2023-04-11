@@ -13,10 +13,17 @@ namespace ReCVEServer.Controllers {
             _nistApiClient = new NistApiClient(config, context);
             _context = context;
         }
-
+        /// <summary>
+        /// Displays the index view.
+        /// </summary>
+        /// <returns>The index view.</returns>
         public async Task<ActionResult> Index() {
            return View();
         }
+        /// <summary>
+        /// Makes a request to the NIST API to check the software version.
+        /// </summary>
+        /// <returns>An HTTP OK response.</returns>
         [HttpPost]
         public async Task<ActionResult> QueryAPI() {
             try {
@@ -28,18 +35,25 @@ namespace ReCVEServer.Controllers {
             }
             return Ok();
         }
+        /// <summary>
+        /// Displays a view that shows all the CVEs in the database.
+        /// </summary>
+        /// <returns>The CVE view.</returns>
         public async Task<IActionResult> CVEView() {
 
             return View(await _context.CVEs.ToListAsync());
         }
 
-        // Add this using statement at the top of your controller file
 
 
+        /// <summary>
+        /// Retrieves the number of CVEs with each base severity rating.
+        /// </summary>
+        /// <returns>A JSON representation of the base severity counts.</returns>
         [HttpGet]
         public async Task<IActionResult> getSeverityRating() {
             var cves = await _context.CVEs.ToListAsync();
-
+            // Group the CVEs by their base severity rating and count the number of CVEs in each group
             var baseScoreCounts = cves
                 .GroupBy(c => c.baseSeverity)
                 .Select(g => new {
