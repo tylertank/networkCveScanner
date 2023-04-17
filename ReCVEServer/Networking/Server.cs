@@ -73,14 +73,18 @@ namespace ReCVEServer.Networking
             TcpClient handler = (TcpClient)obj;
             NetworkStream stream = handler.GetStream();
             while (handler.Connected)
-            {   
+            {
                 Task<string> jString = ReceiveData(stream);
                 jString.Wait();
                 string jsonS = jString.Result;
                 var jResults = JObject.Parse(jsonS);
                 var IDVal = jResults.GetValue("id");
                 var typeVal = jResults.GetValue("type");
-                if (jResults.Value<string>("id") == "null")
+                if (jResults.Value<string>("type") == "process")
+                {
+                    await processStatus(jResults);
+                }
+                else if (jResults.Value<string>("id") == "4" || jResults.Value<string>("id") == "3")
                 {
                     Task<int> clientID = clientHandshake(jResults);
                     clientID.Wait();
@@ -91,14 +95,11 @@ namespace ReCVEServer.Networking
                 }
                 else if (jResults.Value<string>("type") == "scan")
                 {
-                   await processScan(jResults);
+                    await processScan(jResults);
                 }
-                else if (jResults.Value<string>("type") == "process")
-                {
-                    await processStatus(jResults);
-                }
+
             }
-           handler.Close();
+            handler.Close();
         }
         /// <summary>
         ///  When a client connects for the first time it'll send a client handshake json
@@ -115,11 +116,11 @@ namespace ReCVEServer.Networking
                 ReCVEServerContext _context = scope.ServiceProvider.GetService<ReCVEServerContext>();
                 //Extract the data from the json
                 var info = jResults.GetValue("info");
-                var temp = info.First();
-                var computer = temp.Value<string>("computer");
-                var ip = temp.Value<string>("ip");
-                var os = temp.Value<string>("OS");
-                var osVersion = temp.Value<string>("OSVersion");
+
+                var computer = info.Value<string>("computer");
+                var ip = info.Value<string>("ip");
+                var os = info.Value<string>("OS");
+                var osVersion = info.Value<string>("OSVersion");
 
                 //parse the data into a client object
                 Client client = new Client();
@@ -134,7 +135,7 @@ namespace ReCVEServer.Networking
                 await _context.SaveChangesAsync();
                 return client.ID;
             }
-            
+
         }
 
         /// <summary>
