@@ -74,7 +74,7 @@ namespace ReCVEServer.Networking
             TcpClient handler = (TcpClient)obj;
             NetworkStream stream = handler.GetStream();
             while (handler.Connected)
-            {   
+            {
                 Task<string> jString = ReceiveData(stream);
                 jString.Wait();
                 string jsonS = jString.Result;
@@ -104,14 +104,11 @@ namespace ReCVEServer.Networking
                 }
                 else if (jResults.Value<string>("type") == "scan")
                 {
-                   await processScan(jResults);
+                    await processScan(jResults);
                 }
-                else if (jResults.Value<string>("type") == "process")
-                {
-                    await processStatus(jResults);
-                }
+
             }
-           handler.Close();
+            handler.Close();
         }
         /// <summary>
         ///  When a client connects for the first time it'll send a client handshake json
@@ -146,7 +143,7 @@ namespace ReCVEServer.Networking
                 await _context.SaveChangesAsync();
                 return client.ID;
             }
-            
+
         }
 
         /// <summary>
