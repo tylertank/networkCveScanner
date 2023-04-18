@@ -67,6 +67,7 @@ namespace ReCVEServer.Networking
         ///  depending on the type of json it'll be sent to the appropiate function to have the 
         ///  information extracted
         /// </summary>
+        /// fix client hello, it should be sent before anything else
 
         private async void directClient(object obj)
         {
@@ -80,7 +81,7 @@ namespace ReCVEServer.Networking
                 var jResults = JObject.Parse(jsonS);
                 var IDVal = jResults.GetValue("id");
                 var typeVal = jResults.GetValue("type");
-                if (jResults.Value<string>("id") == "null")
+                if (jResults.Value<string>("type") == "clientHello")
                 {
                     Task<int> clientID = clientHandshake(jResults);
                     clientID.Wait();
