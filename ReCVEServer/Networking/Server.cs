@@ -128,7 +128,6 @@ namespace ReCVEServer.Networking
                 ReCVEServerContext _context = scope.ServiceProvider.GetService<ReCVEServerContext>();
                 //Extract the data from the json
                 var temp = jResults.GetValue("info");
-                //var temp = info.First();
                 var computer = temp.Value<string>("computer");
                 var ip = temp.Value<string>("ip");
                 var os = temp.Value<string>("OS");
@@ -223,25 +222,8 @@ namespace ReCVEServer.Networking
         {
             byte[] data = Encoding.UTF8.GetBytes(message, 0, message.Length);
             byte[] count_bytes = BitConverter.GetBytes(data.Length);
-
-           
            stream.Write(count_bytes, 0, 4);
            stream.Write(data, 0, data.Length);
-            /*
-                byte[] data = new byte[message.Length + 4];
-
-            byte[] count_bytes = BitConverter.GetBytes(message.Length);
-            for (int i = 0; i < 4; i++)
-            {
-                data[i] = count_bytes[i];
-            }
-            Encoding.UTF8.GetBytes(message, 0, message.Length, data, 4);
-
-            //NetworkStream stream = _tcpSocket.GetStream();
-            //try
-            {
-                stream.Write(data, 0, data.Length);
-            }*/
         }
         private async Task<string> ReceiveData(NetworkStream stream)
         {
