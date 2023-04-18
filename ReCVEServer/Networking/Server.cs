@@ -83,12 +83,24 @@ namespace ReCVEServer.Networking
                 var typeVal = jResults.GetValue("type");
                 if (jResults.Value<string>("type") == "clientHello")
                 {
-                    Task<int> clientID = clientHandshake(jResults);
-                    clientID.Wait();
-                    ServerAck serverAck = new ServerAck();
-                    serverAck.id = clientID.Result;
-                    string json = JsonConvert.SerializeObject(serverAck);
-                    SendData(json, stream);
+                    string donde = jResults.Value<string>("id");
+                    if (jResults.Value<string>("id")==null)
+                    {
+                        Task<int> clientID = clientHandshake(jResults);
+                        clientID.Wait();
+                        ServerAck serverAck = new ServerAck();
+                        serverAck.id = clientID.Result;
+                        string json = JsonConvert.SerializeObject(serverAck);
+                        SendData(json, stream);
+                    }
+                    else
+                    {
+                        ServerAck serverAck = new ServerAck();
+                        serverAck.id = jResults.Value<int>("id");
+                        string json = JsonConvert.SerializeObject(serverAck);
+                        SendData(json, stream);
+                    }
+                    
                 }
                 else if (jResults.Value<string>("type") == "scan")
                 {
@@ -115,8 +127,8 @@ namespace ReCVEServer.Networking
             {
                 ReCVEServerContext _context = scope.ServiceProvider.GetService<ReCVEServerContext>();
                 //Extract the data from the json
-                var info = jResults.GetValue("info");
-                var temp = info.First();
+                var temp = jResults.GetValue("info");
+                //var temp = info.First();
                 var computer = temp.Value<string>("computer");
                 var ip = temp.Value<string>("ip");
                 var os = temp.Value<string>("OS");
@@ -209,7 +221,14 @@ namespace ReCVEServer.Networking
         
         private void SendData(string message, NetworkStream stream)
         {
-            byte[] data = new byte[message.Length + 4];
+            byte[] data = Encoding.UTF8.GetBytes(message, 0, message.Length);
+            byte[] count_bytes = BitConverter.GetBytes(data.Length);
+
+           
+           stream.Write(count_bytes, 0, 4);
+           stream.Write(data, 0, data.Length);
+            /*
+                byte[] data = new byte[message.Length + 4];
 
             byte[] count_bytes = BitConverter.GetBytes(message.Length);
             for (int i = 0; i < 4; i++)
@@ -222,7 +241,7 @@ namespace ReCVEServer.Networking
             //try
             {
                 stream.Write(data, 0, data.Length);
-            }
+            }*/
         }
         private async Task<string> ReceiveData(NetworkStream stream)
         {
