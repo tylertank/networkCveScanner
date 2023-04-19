@@ -67,6 +67,7 @@ namespace ReCVEServer.Networking
         ///  depending on the type of json it'll be sent to the appropiate function to have the 
         ///  information extracted
         /// </summary>
+        /// fix client hello, it should be sent before anything else
 
         private async void directClient(object obj)
         {
@@ -80,18 +81,26 @@ namespace ReCVEServer.Networking
                 var jResults = JObject.Parse(jsonS);
                 var IDVal = jResults.GetValue("id");
                 var typeVal = jResults.GetValue("type");
-                if (jResults.Value<string>("type") == "process")
+                if (jResults.Value<string>("type") == "clientHello")
                 {
-                    await processStatus(jResults);
-                }
-                else if (jResults.Value<string>("id") == "4" || jResults.Value<string>("id") == "3")
-                {
-                    Task<int> clientID = clientHandshake(jResults);
-                    clientID.Wait();
-                    ServerAck serverAck = new ServerAck();
-                    serverAck.id = clientID.Result;
-                    string json = JsonConvert.SerializeObject(serverAck);
-                    SendData(json, stream);
+                    string donde = jResults.Value<string>("id");
+                    if (jResults.Value<string>("id")==null)
+                    {
+                        Task<int> clientID = clientHandshake(jResults);
+                        clientID.Wait();
+                        ServerAck serverAck = new ServerAck();
+                        serverAck.id = clientID.Result;
+                        string json = JsonConvert.SerializeObject(serverAck);
+                        SendData(json, stream);
+                    }
+                    else
+                    {
+                        ServerAck serverAck = new ServerAck();
+                        serverAck.id = jResults.Value<int>("id");
+                        string json = JsonConvert.SerializeObject(serverAck);
+                        SendData(json, stream);
+                    }
+                    
                 }
                 else if (jResults.Value<string>("type") == "scan")
                 {
@@ -115,12 +124,11 @@ namespace ReCVEServer.Networking
             {
                 ReCVEServerContext _context = scope.ServiceProvider.GetService<ReCVEServerContext>();
                 //Extract the data from the json
-                var info = jResults.GetValue("info");
-
-                var computer = info.Value<string>("computer");
-                var ip = info.Value<string>("ip");
-                var os = info.Value<string>("OS");
-                var osVersion = info.Value<string>("OSVersion");
+                var temp = jResults.GetValue("info");
+                var computer = temp.Value<string>("computer");
+                var ip = temp.Value<string>("ip");
+                var os = temp.Value<string>("OS");
+                var osVersion = temp.Value<string>("OSVersion");
 
                 //parse the data into a client object
                 Client client = new Client();
@@ -209,20 +217,10 @@ namespace ReCVEServer.Networking
         
         private void SendData(string message, NetworkStream stream)
         {
-            byte[] data = new byte[message.Length + 4];
-
-            byte[] count_bytes = BitConverter.GetBytes(message.Length);
-            for (int i = 0; i < 4; i++)
-            {
-                data[i] = count_bytes[i];
-            }
-            Encoding.UTF8.GetBytes(message, 0, message.Length, data, 4);
-
-            //NetworkStream stream = _tcpSocket.GetStream();
-            //try
-            {
-                stream.Write(data, 0, data.Length);
-            }
+            byte[] data = Encoding.UTF8.GetBytes(message, 0, message.Length);
+            byte[] count_bytes = BitConverter.GetBytes(data.Length);
+           stream.Write(count_bytes, 0, 4);
+           stream.Write(data, 0, data.Length);
         }
         private async Task<string> ReceiveData(NetworkStream stream)
         {
