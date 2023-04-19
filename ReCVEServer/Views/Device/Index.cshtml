@@ -15,7 +15,6 @@
 @{
     List<Client> allClients = new List<Client>();
     foreach (var client in Model.Clients) {
-        // Your client-related code here
         allClients.Add(client);
     }
     allClients.OrderBy(c => c.Name).ThenBy(c => c.IPAddress);
