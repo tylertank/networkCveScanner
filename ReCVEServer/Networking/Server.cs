@@ -12,22 +12,21 @@ using static ReCVEServer.Data.ReCVEServerContext;
 using ReCVEServer.Models;
 using static System.Formats.Asn1.AsnWriter;
 using Newtonsoft.Json;
+//using ReCVEServer.Networking.ServerAck;
 
 namespace ReCVEServer.Networking
 {
 
     public class Server
     {
-       // private  ReCVEServerContext _context;
         private readonly IServiceScopeFactory _scopeFactory;
+
         /// <summary>
         ///  This is the server constructor for the server class
         ///  In order for server to be called in the program.cs builder we need to alter the scope of 
         ///  the server class
         ///  we do this using iservicescopefactory as seen below
         /// </summary>
-
-
         public Server(IServiceScopeFactory serviceScopeFactory)
         {
             _scopeFactory = serviceScopeFactory;
@@ -37,15 +36,14 @@ namespace ReCVEServer.Networking
         /// <summary>
         ///  This also helps the builder in program.cs run the server class
         /// </summary>
-
         public async Task StartAsync()
         {
         }
+
         /// <summary>
         /// This is the landing method for server, this is where the server is started 
         /// connecting clients are given seperate threads from here to interact with the server
         /// </summary>
-
         public async void serverSock()
         {
                 System.Diagnostics.Debug.WriteLine("I made it into serverSock");
@@ -62,53 +60,62 @@ namespace ReCVEServer.Networking
                     t.Start(handler);
                 }
         }
+
         /// <summary>
         ///  when the server recieves a json from the client it'll be directed here to be parsed
         ///  depending on the type of json it'll be sent to the appropiate function to have the 
         ///  information extracted
         /// </summary>
         /// fix client hello, it should be sent before anything else
-
         private async void directClient(object obj)
         {
-            TcpClient handler = (TcpClient)obj;
-            NetworkStream stream = handler.GetStream();
-            while (handler.Connected)
-            {
-                Task<string> jString = ReceiveData(stream);
-                jString.Wait();
-                string jsonS = jString.Result;
-                var jResults = JObject.Parse(jsonS);
-                var IDVal = jResults.GetValue("id");
-                var typeVal = jResults.GetValue("type");
-                if (jResults.Value<string>("type") == "clientHello")
-                {
-                    string donde = jResults.Value<string>("id");
-                    if (jResults.Value<string>("id")==null)
-                    {
-                        Task<int> clientID = clientHandshake(jResults);
-                        clientID.Wait();
-                        ServerAck serverAck = new ServerAck();
-                        serverAck.id = clientID.Result;
-                        string json = JsonConvert.SerializeObject(serverAck);
-                        SendData(json, stream);
-                    }
-                    else
-                    {
-                        ServerAck serverAck = new ServerAck();
-                        serverAck.id = jResults.Value<int>("id");
-                        string json = JsonConvert.SerializeObject(serverAck);
-                        SendData(json, stream);
-                    }
-                    
-                }
-                else if (jResults.Value<string>("type") == "scan")
-                {
-                    await processScan(jResults);
-                }
+            try {
 
+                TcpClient handler = (TcpClient)obj;
+                NetworkStream stream = handler.GetStream();
+
+                while (handler.Connected) {
+                    Task<string> jString = ReceiveData(stream);
+                    jString.Wait();
+                    string jsonS = jString.Result;
+                    var jResults = JObject.Parse(jsonS);
+
+                    if (jResults.Value<string>("type") == "clientHello") {
+                        Task<string> json = startHandshake(jResults);
+                        json.Wait();
+                        SendData(json.Result, stream);
+                    }
+                    else if (jResults.Value<string>("type") == "scan") {
+                        await processScan(jResults);
+                    }
+                    else if (jResults.Value<string>("type") == "process") {
+                        await processStatus(jResults);
+                    }
+                }
+                handler.Close();
             }
-            handler.Close();
+            catch (Exception ex) {
+                Console.WriteLine("something was closed", ex.ToString());
+            }
+        }
+        /// <summary>
+        /// This code checks if the client is a returning client or a first time client. 
+        /// </summary>
+        /// <param name="jResults"></param>
+        /// <returns></returns>
+        private async Task<string> startHandshake(JObject jResults) {
+            ServerAck serverAck = new ServerAck();
+            //If this is the first time a client is connecting go here
+            if (jResults.Value<string>("id") == null) {
+                Task<int> clientID = clientHandshake(jResults);
+                clientID.Wait();
+                serverAck.id = clientID.Result;
+            }
+            //If the client is just reconnecting go here
+            else {
+                serverAck.id = jResults.Value<int>("id");
+            }
+            return JsonConvert.SerializeObject(serverAck);
         }
         /// <summary>
         ///  When a client connects for the first time it'll send a client handshake json
@@ -143,7 +150,6 @@ namespace ReCVEServer.Networking
                 await _context.SaveChangesAsync();
                 return client.ID;
             }
-
         }
 
         /// <summary>
@@ -185,9 +191,6 @@ namespace ReCVEServer.Networking
                 System.Diagnostics.Debug.WriteLine("made it to process status");
                 int id = jResults.Value<int>("id");
                 var objects = jResults.GetValue("objects");
-
-
-
                 for (int i = 0; i < objects.Count(); i++)
                 {
                     var current = objects[i];
@@ -215,14 +218,14 @@ namespace ReCVEServer.Networking
         //***************************************************************************************************************************
         //These methods are modified fromm the windows daemon created by trace engel
         
-        private void SendData(string message, NetworkStream stream)
+        public void SendData(string message, NetworkStream stream)
         {
             byte[] data = Encoding.UTF8.GetBytes(message, 0, message.Length);
             byte[] count_bytes = BitConverter.GetBytes(data.Length);
            stream.Write(count_bytes, 0, 4);
            stream.Write(data, 0, data.Length);
         }
-        private async Task<string> ReceiveData(NetworkStream stream)
+        public async Task<string> ReceiveData(NetworkStream stream)
         {
             byte[] buffer = new byte[1024]; // Note the buffer is never cleared. It is simply overwritten with new data
                                             // and only the new data is read.
@@ -237,18 +240,6 @@ namespace ReCVEServer.Networking
             }
             return sb.ToString();
         }
-    }
-    public class ServerAck
-    {
-        
-        public string type { get; private set ; }
-        //type = "serverAck";
-        public int id { get; set; }
-        public ServerAck()
-        {
-            type = "serverAck";
-        }
-
     }
 }
 
