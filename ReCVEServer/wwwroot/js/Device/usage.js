@@ -81,9 +81,3 @@ function stopInterval() {
     }
 }
 
-
-
-$(document).ready(function () {
-    // Initialize the DataTable
- 
-});
