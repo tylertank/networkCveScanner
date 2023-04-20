@@ -1,5 +1,4 @@
-﻿
-@model IEnumerable<ReCVEServer.Models.CVE>
+﻿@model IEnumerable<ReCVEServer.Models.CVE>
 
 @{
     ViewData["Title"] = "CVEView";
@@ -13,20 +12,43 @@
 }
 
 @section Scripts{
+    <script src="~/js/CVE/queryAPI.js" asp-append-version="true"></script>
+    <script src="~/js/CVE/severityChart.js" asp-append-version="true"></script>
 
-  <script src="~/js/CVE/severityChart.js" asp-append-version="true"></script> 
- 
 }
+<div class="container-fluid mt-4">
+    <h1>CVEView</h1>
 
-<h1>CVEView</h1>
-
-<br />
-<button class="btn btn-warning" id="get_data" onclick="fetchCveChartData('@Url.Action("getSeverityRating", "nist")', 'cvePieChart', createChart)">Get Data</button>
-
-
-<hr>
+    <br />
 
 
-<div id="cvePieChart"></div>
+    <hr>
 
 
+
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Devices</h1>
+    </div>
+    <button class="btn btn-info" onclick="QueryAPI()">Update CVE Database</button>
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div id="cvePieChart"></div>
+
+                </div>
+            </div>
+            </div>
+        </div>
+    <div class="col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+
+            </div>
+        </div>
+    </div>
+    </div>
+
+
+</div>

@@ -1,3 +1,6 @@
+$(function () {
+    fetchCveChartData("/nist/getSeverityRating", "cvePieChart", createChart)
+});
 
 function fetchCveChartData(url, elementId, onSuccess) {
   

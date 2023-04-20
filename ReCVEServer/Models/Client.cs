@@ -11,6 +11,6 @@
         public string? OSVersion { get; set; }
         public DateTime EnrollmentDate { get; set; }
         
-
+        public bool online { get; set; }
     }
 }
