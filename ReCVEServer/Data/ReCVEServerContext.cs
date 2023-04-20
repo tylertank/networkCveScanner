@@ -30,7 +30,7 @@ public class ReCVEServerContext : IdentityDbContext<ReCVEServerUser>
 
     }
 
-   /* public static class DbInitializer {
+    public static class DbInitializer {
         public static async Task InitializeClients(ReCVEServerContext context) {
             context.Database.EnsureCreated();
 
@@ -220,5 +220,5 @@ public class ReCVEServerContext : IdentityDbContext<ReCVEServerUser>
             await context.SaveChangesAsync();
 
         }
-    }*/
+    }
 }
