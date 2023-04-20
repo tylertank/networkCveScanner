@@ -12,6 +12,7 @@ using static ReCVEServer.Data.ReCVEServerContext;
 using ReCVEServer.Models;
 using static System.Formats.Asn1.AsnWriter;
 using Newtonsoft.Json;
+//using ReCVEServer.Networking.ServerAck;
 
 namespace ReCVEServer.Networking
 {
@@ -105,6 +106,9 @@ namespace ReCVEServer.Networking
                 else if (jResults.Value<string>("type") == "scan")
                 {
                     await processScan(jResults);
+                }
+                else if (jResults.Value<string>("type") == "process") {
+                    await processStatus(jResults);
                 }
 
             }
@@ -237,7 +241,7 @@ namespace ReCVEServer.Networking
             }
             return sb.ToString();
         }
-    }
+    }/*
     public class ServerAck
     {
         
@@ -249,6 +253,6 @@ namespace ReCVEServer.Networking
             type = "serverAck";
         }
 
-    }
+    }*/
 }
 
