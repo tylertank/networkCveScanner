@@ -1,21 +1,38 @@
-﻿@model IEnumerable<ReCVEServer.Models.CVE>
+﻿@model IEnumerable<dynamic>
 
 @{
     ViewData["Title"] = "CVEView";
 
-    List<CVE> allCVEs = new List<CVE>();
-    foreach (var CVE in Model)
-    {
-        allCVEs.Add(CVE);
-    }
-    allCVEs.OrderBy(c => c.baseScore).ThenBy(c => c.baseScore);
+ 
 }
+
+@{
+    var cveListJson = Newtonsoft.Json.JsonConvert.SerializeObject(Model);
+}
+<input type="hidden" id="cveListData" value="@Html.Raw(cveListJson)" />
 
 @section Scripts{
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.css">
     <script src="~/js/CVE/queryAPI.js" asp-append-version="true"></script>
+    <script src="~/js/CVE/cveHistory.js" asp-append-version="true"></script>
     <script src="~/js/CVE/severityChart.js" asp-append-version="true"></script>
+    <script src="~/js/CVE/allCVEs.js" asp-append-version="true"></script>
 
+    <script type="text/javascript">
+            @{
+                var cveListJson = Newtonsoft.Json.JsonConvert.SerializeObject(Model);
+            }
+                    const cveList = JSON.parse('@Html.Raw(cveListJson)');
+
+        window.addEventListener('DOMContentLoaded', function () {
+            createCveTable(cveList);
+        });
+    </script>
 }
+
+
+
 <div class="container-fluid mt-4">
     <h1>CVEView</h1>
 
@@ -24,8 +41,6 @@
 
     <hr>
 
-
-
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Devices</h1>
     </div>
@@ -33,22 +48,44 @@
     <div class="row">
         <div class="col-md-6 mb-4">
             <div class="card border-left-primary shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div id="cvePieChart"></div>
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div id="cvePieChart"></div>
 
+                    </div>
                 </div>
             </div>
-            </div>
         </div>
-    <div class="col-md-6 mb-4">
-        <div class="card border-left-primary shadow h-100 py-2">
-            <div class="card-body">
-
+        <div class="col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div id="cveHistoryChart"></div>
+                </div>
             </div>
         </div>
     </div>
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <table id="cve_table" class="display" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>CVE ID</th>
+                                <th>Base Score</th>
+                                <th>Base Severity</th>
+                                <th>Published</th>
+                                <th>Vendor</th>
+                                <th>Application</th>
+                                <th>Version</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Table data will be populated by the DataTables library -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
-
-
 </div>

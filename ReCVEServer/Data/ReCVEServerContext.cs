@@ -8,20 +8,18 @@ using System.Reflection.Emit;
 
 namespace ReCVEServer.Data;
 
-public class ReCVEServerContext : IdentityDbContext<ReCVEServerUser>
-{
+public class ReCVEServerContext : IdentityDbContext<ReCVEServerUser> {
     public ReCVEServerContext(DbContextOptions<ReCVEServerContext> options)
-        : base(options)
-    {
+        : base(options) {
     }
     public DbSet<Client> Clients { get; set; }
     public DbSet<CVE> CVEs { get; set; }
     public DbSet<Software> Softwares { get; set; }
     public DbSet<Vulnerability> Vulnerabilities { get; set; }
     public DbSet<Status> Statuses { get; set; }
+    public DbSet<CveHistory> History { get; set; }
 
-    protected override void OnModelCreating(ModelBuilder builder)
-    {
+    protected override void OnModelCreating(ModelBuilder builder) {
         base.OnModelCreating(builder);
         builder.Entity<CVE>()
           .HasIndex(c => new { c.cveID, c.vendor, c.application, c.version })
@@ -219,6 +217,61 @@ public class ReCVEServerContext : IdentityDbContext<ReCVEServerUser>
             context.Statuses.Add(status5);
             await context.SaveChangesAsync();
 
+        }
+        public static async Task InitializeHistory(ReCVEServerContext context) {
+            CveHistory history = new CveHistory {
+                totalCount = 1000,
+                cveScore = 9.8,
+                date = DateTime.Now.AddDays(-7),
+                highCount = 10,
+                lowCount = 20,
+                mediumCount = 30,
+                criticalCount = 5
+            };
+            CveHistory history1 = new CveHistory {
+                totalCount = 1500,
+                cveScore = 8.8,
+                date = DateTime.Now.AddDays(-6),
+                highCount = 8,
+                lowCount = 25,
+                mediumCount = 35,
+                criticalCount = 3
+            };
+            CveHistory history2 = new CveHistory {
+                totalCount = 800,
+                cveScore = 8.8,
+                date = DateTime.Now.AddDays(-5),
+                highCount = 15,
+                lowCount = 10,
+                mediumCount = 25,
+                criticalCount = 5
+            };
+            CveHistory history3 = new CveHistory {
+                totalCount = 1200,
+                cveScore =8.5,
+                date = DateTime.Now.AddDays(-4),
+                highCount = 7,
+                lowCount = 28,
+                mediumCount = 40,
+                criticalCount = 5
+            };
+            CveHistory history4 = new CveHistory {
+                totalCount = 900,
+                cveScore = 8.0,
+                date = DateTime.Now.AddDays(-3),
+                highCount = 12,
+                lowCount = 15,
+                mediumCount = 30,
+                criticalCount = 3
+
+            };
+
+            context.History.Add(history);
+            context.History.Add(history1); 
+            context.History.Add(history2);
+            context.History.Add(history3);
+            context.History.Add(history4);
+            await context.SaveChangesAsync();
         }
     }
 }

@@ -19,6 +19,14 @@ namespace ReCVEServer.Controllers {
 
         public async Task<ActionResult> Index() {
             var clients = await _context.Clients.ToListAsync();
+        
+            return View(clients);
+
+        }
+
+
+        public async Task<IActionResult> Usage() {
+            var clients = await _context.Clients.ToListAsync();
             var statuses = await _context.Statuses.ToListAsync();
 
             var viewModel = new ClientStatusViewModel {
@@ -27,8 +35,8 @@ namespace ReCVEServer.Controllers {
             };
 
             return View(viewModel);
-
         }
+
         [HttpPost]
         public async Task<IActionResult> UpdateSystemInfo([FromBody] Status systemInfo) {
             var existingSystemInfo = await _context.Statuses.FindAsync(1);
