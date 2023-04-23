@@ -1,7 +1,41 @@
 ﻿@{
     ViewData["Title"] = "Dashboard";
 }
+@using ReCVEServer.Data
+@using ReCVEServer.Models;
+@model ReCVEServer.Models.ClientCVEViewModel
+@section Scripts{
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.css">
+    <script src="~/js/CVE/queryAPI.js" asp-append-version="true"></script>
+    <script src="~/js/CVE/cveHistory.js" asp-append-version="true"></script>
+    <script src="~/js/CVE/severityChart.js" asp-append-version="true"></script>
+    <script src="~/js/Home/homeCVEs.js" asp-append-version="true"></script>
+    <script src="~/js/Home/cveCountHistory.js" asp-append-version="true"></script>
 
+}
+@{
+    var onlineHosts = 0;
+    List<Client> allClients = new List<Client>();
+    foreach (var client in Model.Clients) {
+        if(client.online == true) {
+            onlineHosts++;
+        }
+    }
+
+    double securityScore = 0.0;
+    int totalCVEs = 0;
+    var recentCVEs = 0.0;
+    if(Model.History.Count() != 0) {
+        
+    var last = Model.History.Last();
+    securityScore = Math.Round(last.cveScore,2);
+    totalCVEs = last.totalCount;
+    recentCVEs = Math.Round((last.totalCount * 0.40),2);
+    }
+
+
+}
 
 <div class="container-fluid mt-4">
 
@@ -18,7 +52,7 @@
                             <div class="font-weight-bold text-dark mb-1">
                                 Security Score
                             </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">7.8</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@securityScore</div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-calendar fa-2x text-gray-300"></i>
@@ -35,7 +69,7 @@
                             <div class="font-weight-bold text-dark mb-1">
                                 CVE's Found
                             </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">300</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@totalCVEs</div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
@@ -50,11 +84,11 @@
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
                             <div class="font-weight-bold text-dark mb-1">
-                                Online Hosts
+                               Recent CVEs
                             </div>
                             <div class="row no-gutters align-items-center">
                                 <div class="col-auto">
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">3</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">@recentCVEs</div>
                                 </div>
 
                                 <div class="col">
@@ -78,7 +112,7 @@
                             </div>
                             <div class="row no-gutters align-items-center">
                                 <div class="col-auto">
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">3</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">@onlineHosts</div>
                                 </div>
 
                                 <div class="col">
@@ -89,6 +123,45 @@
                             <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+       
+            <div class="col-md-6 mb-4">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div id="cveHistoryChart"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div id="cvePieChart"></div>
+                    </div>
+                </div>
+            </div>
+            
+      
+
+
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div id="cveCountChart"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div id="cveCountChart"></div>
                 </div>
             </div>
         </div>
