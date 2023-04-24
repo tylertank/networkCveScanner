@@ -119,7 +119,7 @@ namespace ReCVEServer.Networking
         private async Task<string> startHandshake(JObject jResults) {
             ServerAck serverAck = new ServerAck();
             //If this is the first time a client is connecting go here
-            if (jResults.Value<string>("id") == null) {
+            if (jResults.Value<int>("id") == 0) {
                 Task<int> clientID = clientHandshake(jResults);
                 clientID.Wait();
                 serverAck.id = clientID.Result;
