@@ -55,9 +55,16 @@ namespace ReCVEServer.Networking
 
                 while (true)
                 {
+                
+                try {
                     TcpClient handler = await listener.AcceptTcpClientAsync();
                     Thread t = new Thread(new ParameterizedThreadStart(directClient));
                     t.Start(handler);
+                }
+                catch (Exception E) {
+                        
+                    }
+                    
                 }
         }
 
