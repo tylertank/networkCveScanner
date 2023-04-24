@@ -55,9 +55,16 @@ namespace ReCVEServer.Networking
 
                 while (true)
                 {
+                
+                try {
                     TcpClient handler = await listener.AcceptTcpClientAsync();
                     Thread t = new Thread(new ParameterizedThreadStart(directClient));
                     t.Start(handler);
+                }
+                catch (Exception E) {
+                        
+                    }
+                    
                 }
         }
 
@@ -84,12 +91,18 @@ namespace ReCVEServer.Networking
                         Task<string> json = startHandshake(jResults);
                         json.Wait();
                         SendData(json.Result, stream);
+                        ServerCommand command = new ServerCommand();
+                        command.command = "scan";
+                        string json2 = JsonConvert.SerializeObject(command);
+                        SendData(json2, stream);
                     }
                     else if (jResults.Value<string>("type") == "scan") {
                         await processScan(jResults);
+                        
                     }
                     else if (jResults.Value<string>("type") == "process") {
                         await processStatus(jResults);
+                       
                     }
                 }
                 handler.Close();
@@ -134,8 +147,8 @@ namespace ReCVEServer.Networking
                 var temp = jResults.GetValue("info");
                 var computer = temp.Value<string>("computer");
                 var ip = temp.Value<string>("ip");
-                var os = temp.Value<string>("OS");
-                var osVersion = temp.Value<string>("OSVersion");
+                var os = "Windows_10";//temp.Value<string>("OS");
+                var osVersion = "22H2";// = temp.Value<string>("OSVersion");
 
                 //parse the data into a client object
                 Client client = new Client();
