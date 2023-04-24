@@ -162,15 +162,31 @@ namespace ReCVEServer.NistApi
         /// <param name="version">The version of the software to search for.</param>
         /// <param name="pageIndex">The index of the page to fetch.</param>
         /// <returns>The response from the NIST API.</returns>
-        public async Task<ApiResponse> GetCveData(string type, string application,string vendor, string version, int pageIndex)
+        public async Task<ApiResponse> GetCveData(string type, string application, string vendor, string version, int pageIndex)
         {
-            string allData = "";
+          
             using var client = new HttpClient();
             client.DefaultRequestHeaders.Add("apiKey", _config.ApiKey);
+            var requestUrl = "";
+            if (vendor == "" || version == "")
+            {
+                if (vendor == "")
+                {
+                    vendor = "*";
+                }
+                if (version == "")
+                {
+                    version = "*";
+                }
+                requestUrl = $"{_config.BaseUrl}virtualMatchString=cpe:2.3:{type}:{vendor}:{application}:{version}&startIndex={pageIndex}";
+            }
+            else
+            {
+                requestUrl = $"{_config.BaseUrl}cpeName=cpe:2.3:{type}:{vendor}:{application}:{version}&startIndex={pageIndex}";
+            }
 
-             var requestUrl = $"{_config.BaseUrl}:{type}:{vendor}:{application}:{version}&startIndex={pageIndex}";
             //var requestUrl = "https://services.nvd.nist.gov/rest/json/cves/2.0?cpeName=cpe:2.3:o:microsoft:windows_10:22h2&startIndex=0"; basic syntax for api request
-            var response = await client.GetAsync(requestUrl);
+             var response = await client.GetAsync(requestUrl);
 
             // If the response is a "Too Many Requests" status code, wait for one second and try again
             if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
@@ -184,7 +200,7 @@ namespace ReCVEServer.NistApi
             }
             string jsonResponse = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<ApiResponse>(jsonResponse);
-        }
+            }
     }
     /// <summary>
     /// Represents the configuration for the NIST API.
@@ -193,12 +209,12 @@ namespace ReCVEServer.NistApi
     {
         public string BaseUrl { get; set; }
         public string ApiKey { get; set; }
-        //cpe:2.3:o:microsoft:windows_10_22h2
+
         public NistApiConfig(IConfiguration configuration)
         {
 
             //https://services.nvd.nist.gov/rest/json/cves/2.0?cpeName=cpe:2.3:o:microsoft:windows_10:1607:*:*:*:*:*:*:*
-            BaseUrl = "https://services.nvd.nist.gov/rest/json/cves/2.0?cpeName=cpe:2.3"; // Replace with the actual API URL
+            BaseUrl = "https://services.nvd.nist.gov/rest/json/cves/2.0?"; // Replace with the actual API URL
             ApiKey = configuration.GetValue<string>("NistApiConfig:ApiKey");
         }
     }
