@@ -76,10 +76,12 @@ namespace ReCVEServer.Networking
         /// fix client hello, it should be sent before anything else
         private async void directClient(object obj)
         {
+            int id = 0;
             try {
 
                 TcpClient handler = (TcpClient)obj;
                 NetworkStream stream = handler.GetStream();
+               
 
                 while (handler.Connected) {
                     Task<string> jString = ReceiveData(stream);
@@ -88,13 +90,14 @@ namespace ReCVEServer.Networking
                     var jResults = JObject.Parse(jsonS);
 
                     if (jResults.Value<string>("type") == "clientHello") {
-                        Task<string> json = startHandshake(jResults);
+                        Task<(string, int)> json = startHandshake(jResults);
                         json.Wait();
-                        SendData(json.Result, stream);
+                        SendData(json.Result.Item1, stream);
                         ServerCommand command = new ServerCommand();
                         command.command = "scan";
                         string json2 = JsonConvert.SerializeObject(command);
                         SendData(json2, stream);
+                        id = json.Result.Item2;
                     }
                     else if (jResults.Value<string>("type") == "scan") {
                         await processScan(jResults);
@@ -109,6 +112,19 @@ namespace ReCVEServer.Networking
             }
             catch (Exception ex) {
                 Console.WriteLine("something was closed", ex.ToString());
+                TcpClient handler = (TcpClient)obj;
+                if (handler.Connected) {
+                    handler.Close();
+                   
+                }
+                using (var scope = _scopeFactory.CreateScope()) {
+                     ReCVEServerContext _context = scope.ServiceProvider.GetService<ReCVEServerContext>();
+                     var cliList = _context.Clients.ToList();
+                    Client temp = cliList[id - 1];
+                    temp.online = false;
+                    _context.Clients.Update(temp);
+                     await _context.SaveChangesAsync();
+                }
             }
         }
         /// <summary>
@@ -116,19 +132,31 @@ namespace ReCVEServer.Networking
         /// </summary>
         /// <param name="jResults"></param>
         /// <returns></returns>
-        private async Task<string> startHandshake(JObject jResults) {
+        private async Task<(string, int)> startHandshake(JObject jResults) {
             ServerAck serverAck = new ServerAck();
+            int clientid;
             //If this is the first time a client is connecting go here
             if (jResults.Value<int>("id") == 0) {
                 Task<int> clientID = clientHandshake(jResults);
                 clientID.Wait();
+                clientid = clientID.Result;
                 serverAck.id = clientID.Result;
             }
             //If the client is just reconnecting go here
             else {
-                serverAck.id = jResults.Value<int>("id");
+                using (var scope = _scopeFactory.CreateScope()) {
+                    ReCVEServerContext _context = scope.ServiceProvider.GetService<ReCVEServerContext>();
+                    int id= jResults.Value<int>("id");
+                    serverAck.id = id;
+                    clientid = id;
+                    var cliList = _context.Clients.ToList();
+                    Client temp = cliList[id - 1];//.online=true;
+                    temp.online = true;
+                    _context.Clients.Update(temp);
+                    await _context.SaveChangesAsync();
+                }
             }
-            return JsonConvert.SerializeObject(serverAck);
+            return (JsonConvert.SerializeObject(serverAck),clientid) ;
         }
         /// <summary>
         ///  When a client connects for the first time it'll send a client handshake json
@@ -147,8 +175,8 @@ namespace ReCVEServer.Networking
                 var temp = jResults.GetValue("info");
                 var computer = temp.Value<string>("computer");
                 var ip = temp.Value<string>("ip");
-                var os = "Windows_10";//temp.Value<string>("OS");
-                var osVersion = "22H2";// = temp.Value<string>("OSVersion");
+                var os = temp.Value<string>("platform");// "Windows_10";//temp.Value<string>("OS");
+                var osVersion = temp.Value<string>("version"); //"22H2";// = temp.Value<string>("OSVersion");
 
                 //parse the data into a client object
                 Client client = new Client();
@@ -157,7 +185,7 @@ namespace ReCVEServer.Networking
                 client.OS = os;
                 client.OSVersion = osVersion;
                 client.EnrollmentDate = DateTime.Now;
-
+                client.online= true;
                 //add the client object to the database  and save it
                 _context.Clients.Add(client);
                 await _context.SaveChangesAsync();
