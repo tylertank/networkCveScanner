@@ -55,7 +55,7 @@ using (var scope = app.Services.CreateScope())
     {
 
        await DbInitializer.InitializeClients(context);
-       await DbInitializer.InitializeSoftware(context);
+    //   await DbInitializer.InitializeSoftware(context);
        await DbInitializer.InitializeStatus(context);
        await DbInitializer.InitializeHistory(context);
 
