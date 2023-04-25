@@ -54,45 +54,41 @@ namespace ReCVEServer.NistApi {
             try {
                 var existingCVEs = await _context.CVEs.ToListAsync();
 
-                // Create a SemaphoreSlim to limit concurrent API calls to 42, we can get banned for going over 50
                 var apiCallSemaphore = new SemaphoreSlim(42);
 
-                // Process each software in parallel with limited concurrency
-                var tasks = softwares.Select(async s =>
-                {
-                    await apiCallSemaphore.WaitAsync();
+                List<Task> tasks = new List<Task>(); // Create a list to store the tasks
 
-                    try {
-                        var software = s.Split('-');
-                        string vendor = software[0];
-                        string application = software[1];
-                        string version = software[2];
+                foreach (var s in softwares) {
+                    tasks.Add(Task.Run(async () =>
+                    {
+                        await apiCallSemaphore.WaitAsync();
 
-                        // Log the start of the API call
-                        Console.WriteLine($"Starting API call for {vendor}-{application}-{version} at {DateTime.UtcNow}");
+                        try {
+                            var software = s.Split("||");
+                            string vendor = software[0];
+                            string application = software[1];
+                            string version = software[2];
 
-                        // Fetch all vulnerabilities for the vendor, application, and version from the NIST API
-                        var allVulnerabilities = await FetchAllVulnerabilitiesAsync("a", application, vendor, version);
+                            Console.WriteLine($"Starting API call for {vendor}-{application}-{version} at {DateTime.UtcNow}");
 
-                        // Log the end of the API call
-                        Console.WriteLine($"Finished API call for {vendor}-{application}-{version} at {DateTime.UtcNow}");
+                            var allVulnerabilities = await FetchAllVulnerabilitiesAsync("a", application, vendor, version);
 
-                        // Release the semaphore to allow another API call
-                        apiCallSemaphore.Release();
+                            Console.WriteLine($"Finished API call for {vendor}-{application}-{version} at {DateTime.UtcNow}");
 
-                        // Process the fetched vulnerabilities
-                        ProcessFetchedVulnerabilities(existingCVEs, allVulnerabilities, vendor, application, version);
-                    }
-                    catch (Exception ex) {
-                        // Release the semaphore in case of an exception to allow another API call
-                        apiCallSemaphore.Release();
-                        throw;
-                    }
-                });
+                            apiCallSemaphore.Release();
 
-                await Task.WhenAll(tasks);
+                            ProcessFetchedVulnerabilities(existingCVEs, allVulnerabilities, vendor, application, version);
+                        }
+                        catch (Exception ex) {
+                            apiCallSemaphore.Release();
+                            throw;
+                        }
+                    }));
+                }
+
+                await Task.WhenAll(tasks); // Wait for all tasks to complete
                 await _context.SaveChangesAsync();
-                await Console.Out.WriteLineAsync(  "Updated CVE database");
+                await Console.Out.WriteLineAsync("Updated CVE database");
                 return true;
             }
             catch (Exception ex) {
