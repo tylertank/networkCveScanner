@@ -54,7 +54,7 @@ public class ReCVEServerContext : IdentityDbContext<ReCVEServerUser> {
                 Name = "Client C",
                 IPAddress = "192.168.0.3",
                 OS = "Windows 10",
-                OSVersion = "1903",
+                OSVersion = "22H2",
                 EnrollmentDate = new DateTime(2022, 2, 10)
             };
 
@@ -220,7 +220,7 @@ public class ReCVEServerContext : IdentityDbContext<ReCVEServerUser> {
         }
         public static async Task InitializeHistory(ReCVEServerContext context) {
             CveHistory history = new CveHistory {
-                totalCount = 1000,
+                totalCount = 320,
                 cveScore = 9.8,
                 date = DateTime.Now.AddDays(-7),
                 highCount = 10,
@@ -229,7 +229,7 @@ public class ReCVEServerContext : IdentityDbContext<ReCVEServerUser> {
                 criticalCount = 5
             };
             CveHistory history1 = new CveHistory {
-                totalCount = 1500,
+                totalCount =300,
                 cveScore = 8.8,
                 date = DateTime.Now.AddDays(-6),
                 highCount = 8,
@@ -238,7 +238,7 @@ public class ReCVEServerContext : IdentityDbContext<ReCVEServerUser> {
                 criticalCount = 3
             };
             CveHistory history2 = new CveHistory {
-                totalCount = 800,
+                totalCount = 200,
                 cveScore = 8.8,
                 date = DateTime.Now.AddDays(-5),
                 highCount = 15,
@@ -247,7 +247,7 @@ public class ReCVEServerContext : IdentityDbContext<ReCVEServerUser> {
                 criticalCount = 5
             };
             CveHistory history3 = new CveHistory {
-                totalCount = 1200,
+                totalCount =100,
                 cveScore =8.5,
                 date = DateTime.Now.AddDays(-4),
                 highCount = 7,
@@ -256,7 +256,7 @@ public class ReCVEServerContext : IdentityDbContext<ReCVEServerUser> {
                 criticalCount = 5
             };
             CveHistory history4 = new CveHistory {
-                totalCount = 900,
+                totalCount = 80,
                 cveScore = 8.0,
                 date = DateTime.Now.AddDays(-3),
                 highCount = 12,
