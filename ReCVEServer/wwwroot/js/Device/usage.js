@@ -57,7 +57,7 @@ async function updateChartData() {
         } else {
             // Update the existing DataTable with new data
             table.clear(); // Clear the existing data
-            table.rows.add(sampleData); // Add the new data
+            table.rows.add(response); // Add the new data
             table.draw(); // Redraw the table
         }
     }).catch(error => {

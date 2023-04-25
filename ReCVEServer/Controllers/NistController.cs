@@ -136,7 +136,14 @@ namespace ReCVEServer.Controllers {
                 averageScore += score;
             }
             averageScore = averageScore / totalCount;
+            if( totalCount != 0) {
+
             cveHistory.cveScore = averageScore;
+            }
+            else {
+
+            cveHistory.cveScore = 0.0;
+            }
             _context.History.Add(cveHistory);
             await _context.SaveChangesAsync();
         }
