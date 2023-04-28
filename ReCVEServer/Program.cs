@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using ReCVEServer.Areas.Identity.Data;
 using static ReCVEServer.Data.ReCVEServerContext;
 using ReCVEServer.Networking;
-
+//test
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ReCVEServerContext>(options =>
