@@ -4,7 +4,7 @@ It is part of a larger project called ReCVE that allows you to install daemons o
 
 The server can be installed on a local machine with IIS and will host a local webserver to gain insight into how vulnerable the computers on your network are.
 ![recve](https://user-images.githubusercontent.com/7892014/235262211-8f6136f6-c6d4-40d7-aa70-4353e087c327.png)
-##Features
+## Features
 Retrieves unique software combinations (vendor, application, and version) from a local database.
 Fetches new vulnerabilities for the specified software versions from the NIST API.
 Updates the local CVE database with new vulnerabilities that are not already present.
