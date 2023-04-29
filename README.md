@@ -1,5 +1,5 @@
 
-## demonstration video
+## Demonstration Video
 https://youtu.be/OQNVCaxMzUI
 #ReCVE
 Is a local server that you can deploy to your network which will help you detect and visualize any CVEs on your network of computers. By installing the ReCVE deamon which will automatically connect to this server and start reporting installed software, cpu and memory usage and real time processes. You can then query the NIST CVE API to find any vulnerabilities on your network. If any vulnerbilities are found they will be stored and reported on the CVE page for you to see. 
