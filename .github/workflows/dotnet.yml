@@ -43,7 +43,7 @@ jobs:
       run: dotnet build --configuration Release
 
     - name: Start the app
-      run: dotnet run --no-build --verbosity normal --configuration Release &
+      run: dotnet run --no-build --verbosity normal ./ReCVEServer/ReCVEServer.csproj --configuration Release &
       continue-on-error: true
 
     - name: Sleep for app start
@@ -52,7 +52,7 @@ jobs:
         time: '30s' # Or however long your app might take to start
 
     - name: Run UI tests
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test --no-build --verbosity diagnostic ./TestProject1/TestProject1.csproj
 
     # Optional: Steps to shut down your application or any other cleanup.
     - name: Setup Chrome
