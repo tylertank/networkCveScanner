@@ -4,6 +4,7 @@ using ReCVEServer.NistApi;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Identity;
+
 using ReCVEServer.Areas.Identity.Data;
 using static ReCVEServer.Data.ReCVEServerContext;
 using ReCVEServer.Networking;
@@ -12,10 +13,10 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ReCVEServerContext>(options =>
     options.UseSqlServer(connectionString));
-
 builder.Services.AddDefaultIdentity<ReCVEServerUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ReCVEServerContext>();
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
 
 
 //builder.Services.AddDatabaseDeveloperPageExceptionFilter();

@@ -16,15 +16,29 @@ namespace TestProject1 {
         [TestClass]
         public class AutomatedUITests : IDisposable {
 
-            private readonly IWebDriver driver;
-            public AutomatedUITests() => driver = new ChromeDriver();
+       
+
+    private readonly IWebDriver driver;
+        public AutomatedUITests()
+        {
+            var chromeOptions = new ChromeOptions();
+            if (Environment.GetEnvironmentVariable("CI") == "true")
+            {
+                chromeOptions.AddArguments("--headless", "--no-sandbox", "--disable-gpu");
+            }
+            driver = new ChromeDriver();
+
+        }
             public void Dispose() {
                 driver.Quit();
                 driver.Dispose();
+
+
             }
 
         [TestMethod]
          public void FirstTest() {
+
              driver.Navigate()
                  .GoToUrl("https://localhost:7025/");
 

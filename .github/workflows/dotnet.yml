@@ -26,3 +26,46 @@ jobs:
       run: dotnet build --no-restore
     - name: Test
       run: dotnet test --no-build --verbosity normal
+
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0.x'
+
+    - name: Build the app
+      run: dotnet build --configuration Release
+
+    - name: Start the app
+      run: dotnet run --project path_to_your_app --configuration Release &
+      continue-on-error: true
+
+    - name: Sleep for app start
+      uses: jakejarvis/wait-action@master
+      with:
+        time: '30s' # Or however long your app might take to start
+
+    - name: Run UI tests
+      run: dotnet test path_to_your_test_project
+
+    # Optional: Steps to shut down your application or any other cleanup.
+    - name: Setup Chrome
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable
+
+    - name: Setup ChromeDriver
+      run: |
+        CHROME_MAIN_VERSION=`google-chrome-stable --version | sed -E "s/(^Google Chrome |\.[0-9]+ )//g"`
+        CHROMEDRIVER_VERSION=`curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_MAIN_VERSION"`
+        curl -L -O "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip"
+        unzip chromedriver_linux64.zip
+        sudo mv chromedriver /usr/bin/
+        sudo chown root:root /usr/bin/chromedriver
+        sudo chmod +x /usr/bin/chromedriver
