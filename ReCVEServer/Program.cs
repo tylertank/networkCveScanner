@@ -8,8 +8,18 @@ using Microsoft.AspNetCore.Identity;
 using ReCVEServer.Areas.Identity.Data;
 using static ReCVEServer.Data.ReCVEServerContext;
 using ReCVEServer.Networking;
-//test
-var builder = WebApplication.CreateBuilder(args);
+using Microsoft.Data.SqlClient;
+using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.AspNetCore.DataProtection;
+using ReCVEServer.Controllers;
+using ReCVEServer.Networking.ClientProcessing;
+using Microsoft.AspNetCore.Http.Features;
+
+// Program fails if SQL container is not yet running. Currently, this program is set to restart on failure.
+// Potential solution: ping SQL ports until response.
+
+var builder = WebApplication.CreateBuilder();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ReCVEServerContext>(options =>
     options.UseSqlServer(connectionString));
@@ -21,6 +31,9 @@ builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
 
 //builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 // Add services to the container.
+builder.Services.Configure<FormOptions>(options => {
+    options.MultipartBodyLengthLimit = 500_000_000;
+});
 builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<NistApiConfig>(provider =>
 {
@@ -29,7 +42,16 @@ builder.Services.AddSingleton<NistApiConfig>(provider =>
 });
 
 builder.Services.AddTransient<NistApiClient>();
-builder.Services.AddSingleton<Server>();
+builder.Services.AddSingleton<ServerLoop>();
+builder.Services.AddSingleton<AssemblySender>();
+builder.Services.AddHostedService<QueuedHostedService>();
+builder.Services.AddSingleton<IBackgroundTaskQueue>(_ => {
+    if (!int.TryParse(builder.Configuration["QueueCapacity"], out var queueCapacity)) {
+        queueCapacity = 10;
+    }
+    return new ServerBackgroundTaskQueue(queueCapacity);
+});
+builder.Services.AddHostedService<DeviceHistoryManager>();
 
 var app = builder.Build();
 app.Services.GetService<IHostApplicationLifetime>().ApplicationStarted.Register(() =>

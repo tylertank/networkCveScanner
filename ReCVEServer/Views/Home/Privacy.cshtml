@@ -1,6 +1,15 @@
-﻿@{
-    ViewData["Title"] = "Privacy Policy";
-}
-<h1>@ViewData["Title"]</h1>
+﻿@model ReCVEServer.Models.UploadAssemblyViewModel
 
-<p>Use this page to detail your site's privacy policy.</p>
+<form asp-action="UploadAssembly" method="post" enctype="multipart/form-data">
+    <label for="ClientId">Select Client:</label>
+    <select asp-for="ClientId" class="form-control" id="ClientId">
+        @foreach (var client in ViewBag.Clients) {
+            <option value="@client.ID">@client.Name (ID: @client.ID)</option>
+        }
+    </select>
+    <br />
+    <label for="File">Select a file to upload:</label>
+    <input asp-for="File" type="file" class="form-control" id="File" />
+    <br />
+    <input type="submit" value="Upload" class="btn btn-primary" />
+</form>
